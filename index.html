@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<title>QuickMig 300 – Tabela za varenje</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 20px;
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+  .controls {
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+  }
+
+  select, input[type=range] {
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  .thickness-value {
+    text-align: right;
+    font-weight: bold;
+    margin-top: 5px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+
+  th {
+    background: #333;
+    color: #fff;
+  }
+
+  .note {
+    font-size: 12px;
+    margin-top: 10px;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<h2>QuickMig 300 – Parametri zavarivanja</h2>
+
+<div class="controls">
+  <label>Materijal</label>
+  <select id="material">
+    <option value="">Izaberi materijal</option>
+    <option value="ms">Čelik (Mild Steel)</option>
+    <option value="ss">Nehrđajući čelik</option>
+    <option value="al">Aluminijum</option>
+  </select>
+
+  <label>Debljina materijala (mm)</label>
+  <input type="range" id="thickness" min="1" max="8" step="0.1" value="2">
+  <div class="thickness-value">
+    <span id="thicknessValue">2.0</span> mm
+  </div>
+</div>
+
+<table id="resultTable" style="display:none;">
+  <thead>
+    <tr>
+      <th>Materijal</th>
+      <th>Debljina</th>
+      <th>Žica</th>
+      <th>Gas</th>
+      <th>Napon (V)</th>
+      <th>Struja (A)</th>
+      <th>Brzina žice (m/min)</th>
+    </tr>
+  </thead>
+  <tbody id="resultBody"></tbody>
+</table>
+
+<div class="note">
+  * Vrednosti su preporučene startne postavke za QuickMig 300 – fino podešavanje je normalno.
+</div>
+
+<script>
+const data = {
+  ms: [
+    { min: 1, max: 2, wire: "0.8", gas: "CO₂", v: "17–18", a: "60–80", ws: "3–4" },
+    { min: 2, max: 3, wire: "0.8", gas: "CO₂", v: "18–19", a: "80–120", ws: "4–5" },
+    { min: 3, max: 5, wire: "0.8 / 1.0", gas: "CO₂", v: "19–20", a: "120–150", ws: "5–6" },
+    { min: 5, max: 8, wire: "1.0", gas: "CO₂", v: "20–22", a: "150–200", ws: "6–7" }
+  ],
+  ss: [
+    { min: 1, max: 3, wire: "0.8 SS", gas: "Ar/CO₂ 90/10", v: "18–20", a: "80–120", ws: "4–5" }
+  ],
+  al: [
+    { min: 1, max: 3, wire: "1.0 Al", gas: "Ar", v: "20–22", a: "80–120", ws: "4–5" },
+    { min: 3, max: 5, wire: "1.2 Al", gas: "Ar", v: "22–24", a: "120–160", ws: "5–6" }
+  ]
+};
+
+const materialEl = document.getElementById("material");
+const thicknessEl = document.getElementById("thickness");
+const thicknessValueEl = document.getElementById("thicknessValue");
+const table = document.getElementById("resultTable");
+const body = document.getElementById("resultBody");
+
+function updateTable() {
+  const material = materialEl.value;
+  const t = parseFloat(thicknessEl.value);
+  thicknessValueEl.textContent = t.toFixed(1);
+
+  body.innerHTML = "";
+  table.style.display = "none";
+
+  if (!material) return;
+
+  const row = data[material].find(d => t >= d.min && t <= d.max);
+  if (!row) return;
+
+  body.innerHTML = `
+    <tr>
+      <td>${material === "ms" ? "Čelik" : material === "ss" ? "Nehrđajući čelik" : "Aluminijum"}</td>
+      <td>${t} mm</td>
+      <td>${row.wire}</td>
+      <td>${row.gas}</td>
+      <td>${row.v}</td>
+      <td>${row.a}</td>
+      <td>${row.ws}</td>
+    </tr>
+  `;
+  table.style.display = "table";
+}
+
+materialEl.addEventListener("change", updateTable);
+thicknessEl.addEventListener("input", updateTable);
+</script>
+
+</body>
+</html>
