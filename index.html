@@ -1,159 +1,139 @@
 <!DOCTYPE html>
-<html lang="sr">
+<html lang="hr">
 <head>
 <meta charset="UTF-8">
-<title>QuickMig 300 – Tabela za varenje</title>
+<title>MIG/MAG Kalkulator – QuickMIG 300</title>
 
 <style>
-  body {
+body {
     font-family: Arial, sans-serif;
     background: #f2f2f2;
     padding: 20px;
-  }
-
-  h2 {
+}
+.container {
+    max-width: 700px;
+    margin: auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+}
+h1 {
     text-align: center;
-  }
-
-  .controls {
-    background: #fff;
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-  }
-
-  label {
+}
+label {
     font-weight: bold;
-    display: block;
-    margin-top: 10px;
-  }
-
-  select, input[type=range] {
+}
+input {
     width: 100%;
-    margin-top: 5px;
-  }
-
-  .thickness-value {
-    text-align: right;
-    font-weight: bold;
-    margin-top: 5px;
-  }
-
-  table {
+    padding: 8px;
+    margin: 10px 0;
+    font-size: 16px;
+}
+table {
     width: 100%;
     border-collapse: collapse;
-    background: #fff;
-  }
-
-  th, td {
+    margin-top: 15px;
+}
+th, td {
     border: 1px solid #ccc;
-    padding: 8px;
+    padding: 10px;
     text-align: center;
-  }
-
-  th {
-    background: #333;
+}
+th {
+    background: #222;
     color: #fff;
-  }
+}
+button {
+    margin-top: 15px;
+    padding: 10px;
+    width: 100%;
+    font-size: 16px;
+    cursor: pointer;
+}
 
-  .note {
-    font-size: 12px;
-    margin-top: 10px;
-    color: #555;
-  }
+/* PRINT FRIENDLY */
+@media print {
+    body {
+        background: #fff;
+    }
+    button, input {
+        display: none;
+    }
+    .container {
+        border: none;
+        box-shadow: none;
+    }
+}
 </style>
 </head>
+
 <body>
 
-<h2>QuickMig 300 – Parametri zavarivanja</h2>
+<div class="container">
+<h1>MIG/MAG Kalkulator<br>Lincoln QuickMIG 300</h1>
 
-<div class="controls">
-  <label>Materijal</label>
-  <select id="material">
-    <option value="">Izaberi materijal</option>
-    <option value="ms">Čelik (Mild Steel)</option>
-    <option value="ss">Nehrđajući čelik</option>
-    <option value="al">Aluminijum</option>
-  </select>
+<label>Debljina materijala (mm):</label>
+<input type="number" id="thickness" step="0.1" placeholder="npr. 1.5">
 
-  <label>Debljina materijala (mm)</label>
-  <input type="range" id="thickness" min="1" max="8" step="0.1" value="2">
-  <div class="thickness-value">
-    <span id="thicknessValue">2.0</span> mm
-  </div>
-</div>
-
-<table id="resultTable" style="display:none;">
-  <thead>
-    <tr>
-      <th>Materijal</th>
-      <th>Debljina</th>
-      <th>Žica</th>
-      <th>Gas</th>
-      <th>Napon (V)</th>
-      <th>Struja (A)</th>
-      <th>Brzina žice (m/min)</th>
-    </tr>
-  </thead>
-  <tbody id="resultBody"></tbody>
+<table>
+<thead>
+<tr>
+    <th>Napon (V)</th>
+    <th>Struja (A)</th>
+    <th>Brzina žice (m/min)</th>
+    <th>Plin</th>
+    <th>Protok</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td id="voltage">–</td>
+    <td id="current">–</td>
+    <td id="wire">–</td>
+    <td id="gas">–</td>
+    <td id="flow">–</td>
+</tr>
+</tbody>
 </table>
 
-<div class="note">
-  * Vrednosti su preporučene startne postavke za QuickMig 300 – fino podešavanje je normalno.
+<button onclick="calculate()">Izračunaj postavke</button>
+<button onclick="window.print()">Ispiši (Print)</button>
 </div>
 
 <script>
-const data = {
-  ms: [
-    { min: 1, max: 2, wire: "0.8", gas: "CO₂", v: "17–18", a: "60–80", ws: "3–4" },
-    { min: 2, max: 3, wire: "0.8", gas: "CO₂", v: "18–19", a: "80–120", ws: "4–5" },
-    { min: 3, max: 5, wire: "0.8 / 1.0", gas: "CO₂", v: "19–20", a: "120–150", ws: "5–6" },
-    { min: 5, max: 8, wire: "1.0", gas: "CO₂", v: "20–22", a: "150–200", ws: "6–7" }
-  ],
-  ss: [
-    { min: 1, max: 3, wire: "0.8 SS", gas: "Ar/CO₂ 90/10", v: "18–20", a: "80–120", ws: "4–5" }
-  ],
-  al: [
-    { min: 1, max: 3, wire: "1.0 Al", gas: "Ar", v: "20–22", a: "80–120", ws: "4–5" },
-    { min: 3, max: 5, wire: "1.2 Al", gas: "Ar", v: "22–24", a: "120–160", ws: "5–6" }
-  ]
-};
+function calculate() {
+    let t = parseFloat(document.getElementById("thickness").value);
 
-const materialEl = document.getElementById("material");
-const thicknessEl = document.getElementById("thickness");
-const thicknessValueEl = document.getElementById("thicknessValue");
-const table = document.getElementById("resultTable");
-const body = document.getElementById("resultBody");
+    let voltage, current, wire;
 
-function updateTable() {
-  const material = materialEl.value;
-  const t = parseFloat(thicknessEl.value);
-  thicknessValueEl.textContent = t.toFixed(1);
+    if (t <= 1.5) {
+        voltage = "16.5 – 17.5";
+        current = "60 – 75";
+        wire = "4.0 – 4.8";
+    } else if (t <= 2.0) {
+        voltage = "17.5 – 18.5";
+        current = "75 – 95";
+        wire = "4.8 – 5.5";
+    } else if (t <= 3.0) {
+        voltage = "18.5 – 19.5";
+        current = "95 – 120";
+        wire = "5.5 – 6.5";
+    } else if (t <= 4.0) {
+        voltage = "19.5 – 21.0";
+        current = "120 – 150";
+        wire = "6.5 – 7.5";
+    } else {
+        voltage = "21.0+";
+        current = "150+";
+        wire = "7.5+";
+    }
 
-  body.innerHTML = "";
-  table.style.display = "none";
-
-  if (!material) return;
-
-  const row = data[material].find(d => t >= d.min && t <= d.max);
-  if (!row) return;
-
-  body.innerHTML = `
-    <tr>
-      <td>${material === "ms" ? "Čelik" : material === "ss" ? "Nehrđajući čelik" : "Aluminijum"}</td>
-      <td>${t} mm</td>
-      <td>${row.wire}</td>
-      <td>${row.gas}</td>
-      <td>${row.v}</td>
-      <td>${row.a}</td>
-      <td>${row.ws}</td>
-    </tr>
-  `;
-  table.style.display = "table";
+    document.getElementById("voltage").innerText = voltage + " V";
+    document.getElementById("current").innerText = current + " A";
+    document.getElementById("wire").innerText = wire;
+    document.getElementById("gas").innerText = "Ar / CO₂ (82/18)";
+    document.getElementById("flow").innerText = "10 – 12 l/min (~1.0 bar)";
 }
-
-materialEl.addEventListener("change", updateTable);
-thicknessEl.addEventListener("input", updateTable);
 </script>
 
 </body>
