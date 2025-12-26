@@ -2,138 +2,311 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<title>MIG/MAG Kalkulator – QuickMIG 300</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lincoln QuickMIG 300 – Simulator</title>
 
 <style>
 body {
+    margin:0;
+    background:#111;
     font-family: Arial, sans-serif;
-    background: #f2f2f2;
-    padding: 20px;
-}
-.container {
-    max-width: 700px;
-    margin: auto;
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-}
-h1 {
-    text-align: center;
-}
-label {
-    font-weight: bold;
-}
-input {
-    width: 100%;
-    padding: 8px;
-    margin: 10px 0;
-    font-size: 16px;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-}
-th {
-    background: #222;
-    color: #fff;
-}
-button {
-    margin-top: 15px;
-    padding: 10px;
-    width: 100%;
-    font-size: 16px;
-    cursor: pointer;
+    color:#fff;
 }
 
-/* PRINT FRIENDLY */
-@media print {
-    body {
-        background: #fff;
-    }
-    button, input {
-        display: none;
-    }
-    .container {
-        border: none;
-        box-shadow: none;
-    }
+.panel {
+    max-width:420px;
+    margin:15px auto;
+    background:#2a2a2a;
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 0 30px #000;
+}
+
+.brand {
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+    color:#e30000;
+}
+
+.display {
+    background:#000;
+    border-radius:8px;
+    padding:12px;
+    display:flex;
+    justify-content:space-between;
+    margin:12px 0;
+    box-shadow: inset 0 0 12px #00ffcc;
+}
+
+.display div {
+    width:48%;
+    text-align:center;
+}
+
+.value {
+    font-size:28px;
+    color:#00ffcc;
+}
+
+.label {
+    font-size:11px;
+    color:#aaa;
+}
+
+label {
+    font-size:13px;
+}
+
+input {
+    width:100%;
+    padding:10px;
+    font-size:16px;
+    border-radius:6px;
+    border:none;
+    margin-top:6px;
+}
+
+.knobs {
+    display:flex;
+    justify-content:space-between;
+    margin:14px 0;
+}
+
+.knob {
+    width:30%;
+    background: radial-gradient(#444, #111);
+    border-radius:50%;
+    padding:18px 0;
+    text-align:center;
+    box-shadow: inset 0 0 15px #000;
+}
+
+.knob strong {
+    font-size:18px;
+}
+
+.knob span {
+    font-size:11px;
+    color:#ccc;
+}
+
+/* ROTARY TRIM */
+.rotary-wrap {
+    text-align:center;
+    margin:16px 0;
+}
+
+.rotary {
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background: radial-gradient(#555, #111);
+    margin:auto;
+    position:relative;
+    touch-action:none;
+    box-shadow: inset 0 0 18px #000;
+}
+
+.rotary-indicator {
+    width:4px;
+    height:42px;
+    background:#00ffcc;
+    position:absolute;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    border-radius:2px;
+    box-shadow:0 0 8px #00ffcc;
+}
+
+.trim-label {
+    margin-top:8px;
+    font-size:14px;
+}
+
+/* WARNING LED */
+.warning-wrap {
+    text-align:center;
+    margin:10px 0;
+}
+
+.led {
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    background:#400;
+    margin:auto;
+    box-shadow:0 0 5px #000;
+}
+
+.led.on {
+    background:red;
+    box-shadow:0 0 14px red;
+}
+
+/* BUTTONS */
+.buttons {
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+button {
+    flex:1;
+    padding:12px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.start { background:#e30000; color:#fff; }
+.stop { background:#333; color:#ccc; }
+
+@media (max-width:480px) {
+    .value { font-size:24px; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-<h1>MIG/MAG Kalkulator<br>Lincoln QuickMIG 300</h1>
+<div class="panel">
+    <div class="brand">LINCOLN ELECTRIC<br>QuickMIG 300</div>
 
-<label>Debljina materijala (mm):</label>
-<input type="number" id="thickness" step="0.1" placeholder="npr. 1.5">
+    <div class="display">
+        <div>
+            <div class="value" id="voltage">--.-</div>
+            <div class="label">VOLTS</div>
+        </div>
+        <div>
+            <div class="value" id="current">---</div>
+            <div class="label">AMPS</div>
+        </div>
+    </div>
 
-<table>
-<thead>
-<tr>
-    <th>Napon (V)</th>
-    <th>Struja (A)</th>
-    <th>Brzina žice (m/min)</th>
-    <th>Plin</th>
-    <th>Protok</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-    <td id="voltage">–</td>
-    <td id="current">–</td>
-    <td id="wire">–</td>
-    <td id="gas">–</td>
-    <td id="flow">–</td>
-</tr>
-</tbody>
-</table>
+    <label>Debljina materijala (mm)</label>
+    <input type="number" id="thickness" step="0.1" placeholder="npr. 1.5">
 
-<button onclick="calculate()">Izračunaj postavke</button>
-<button onclick="window.print()">Ispiši (Print)</button>
+    <div class="knobs">
+        <div class="knob">
+            <strong id="wire">–</strong><br>
+            <span>ŽICA m/min</span>
+        </div>
+        <div class="knob">
+            <strong>0.8 mm</strong><br>
+            <span>SG2</span>
+        </div>
+        <div class="knob">
+            <strong>82/18</strong><br>
+            <span>Ar / CO₂</span>
+        </div>
+    </div>
+
+    <!-- ROTARY TRIM -->
+    <div class="rotary-wrap">
+        <div id="rotary" class="rotary">
+            <div class="rotary-indicator"></div>
+        </div>
+        <div class="trim-label">
+            TRIM: <span id="trimValue">0.0 V</span>
+        </div>
+    </div>
+
+    <!-- WARNING -->
+    <div class="warning-wrap">
+        ⚠️ WARNING
+        <div id="warning" class="led"></div>
+    </div>
+
+    <div class="buttons">
+        <button class="start" onclick="startArc()">START</button>
+        <button class="stop" onclick="stopArc()">STOP</button>
+    </div>
 </div>
 
+<audio id="arcSound" loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_65cbe8a8de.mp3">
+</audio>
+
 <script>
-function calculate() {
-    let t = parseFloat(document.getElementById("thickness").value);
+let baseVoltage = 17.0;
+let angle = 0;
+let trim = 0;
 
-    let voltage, current, wire;
+const voltageDisplay = document.getElementById("voltage");
+const currentDisplay = document.getElementById("current");
+const wireDisplay = document.getElementById("wire");
+const trimText = document.getElementById("trimValue");
+const warning = document.getElementById("warning");
+const arc = document.getElementById("arcSound");
+const knob = document.getElementById("rotary");
 
-    if (t <= 1.5) {
-        voltage = "16.5 – 17.5";
-        current = "60 – 75";
-        wire = "4.0 – 4.8";
-    } else if (t <= 2.0) {
-        voltage = "17.5 – 18.5";
-        current = "75 – 95";
-        wire = "4.8 – 5.5";
-    } else if (t <= 3.0) {
-        voltage = "18.5 – 19.5";
-        current = "95 – 120";
-        wire = "5.5 – 6.5";
-    } else if (t <= 4.0) {
-        voltage = "19.5 – 21.0";
-        current = "120 – 150";
-        wire = "6.5 – 7.5";
-    } else {
-        voltage = "21.0+";
-        current = "150+";
-        wire = "7.5+";
-    }
-
-    document.getElementById("voltage").innerText = voltage + " V";
-    document.getElementById("current").innerText = current + " A";
-    document.getElementById("wire").innerText = wire;
-    document.getElementById("gas").innerText = "Ar / CO₂ (82/18)";
-    document.getElementById("flow").innerText = "10 – 12 l/min (~1.0 bar)";
+function synergy(t) {
+    if (t <= 1.5) return {v:17.0,a:70,w:4.5};
+    if (t <= 2.0) return {v:18.0,a:85,w:5.2};
+    if (t <= 3.0) return {v:19.0,a:110,w:6.0};
+    if (t <= 4.0) return {v:20.5,a:140,w:7.0};
+    return {v:22.0,a:160,w:8.0};
 }
+
+function startArc() {
+    let t = parseFloat(document.getElementById("thickness").value);
+    if (!t) return;
+
+    let s = synergy(t);
+    baseVoltage = s.v;
+    angle = 0;
+    updateTrim();
+
+    currentDisplay.innerText = s.a;
+    wireDisplay.innerText = s.w;
+
+    arc.volume = 0.4;
+    arc.play();
+}
+
+function stopArc() {
+    arc.pause();
+    arc.currentTime = 0;
+    warning.classList.remove("on");
+}
+
+function updateTrim() {
+    let finalV = baseVoltage + trim;
+    voltageDisplay.innerText = finalV.toFixed(1);
+
+    if (finalV > baseVoltage + 1.2) {
+        warning.classList.add("on");
+    } else {
+        warning.classList.remove("on");
+    }
+}
+
+/* ROTARY CONTROL */
+function setAngle(a) {
+    angle = Math.max(-135, Math.min(135, a));
+    knob.style.transform = `rotate(${angle}deg)`;
+    trim = (angle / 135) * 2.0;
+    trimText.innerText = trim.toFixed(1) + " V";
+    updateTrim();
+}
+
+knob.addEventListener("mousedown", e => {
+    document.onmousemove = ev => setAngle(angle - ev.movementY);
+    document.onmouseup = () => document.onmousemove = null;
+});
+
+knob.addEventListener("touchstart", e => {
+    let startY = e.touches[0].clientY;
+    let startAngle = angle;
+    knob.ontouchmove = ev => {
+        let delta = startY - ev.touches[0].clientY;
+        setAngle(startAngle + delta);
+    };
+    knob.ontouchend = () => knob.ontouchmove = null;
+});
 </script>
 
 </body>
