@@ -1,194 +1,142 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QUICKMIG 300 – PRO Simulator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUICKMIG 300 – ADVANCED Simulator</title>
+    <style>
+        :root { --red: #ff2b2b; --bg: #151515; --panel: #2b2b2b; }
+        body { background: var(--bg); font-family: sans-serif; color: #eee; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .panel { width: 95%; max-width: 550px; background: var(--panel); border-radius: 18px; padding: 20px; box-shadow: 0 15px 40px #000; border: 1px solid #444; }
+        h2 { text-align: center; color: var(--red); margin: 0 0 15px 0; font-size: 1.4rem; }
+        
+        .grid-top { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .led-box { background: #000; color: #f00; font-family: monospace; font-size: 32px; text-align: center; padding: 10px; border-radius: 8px; border: 2px solid #444; }
+        .label { font-size: 10px; color: #aaa; text-transform: uppercase; margin-top: 5px; text-align: center; }
 
-<style>
-body { background:#151515; font-family:Arial; color:#eee; margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+        .settings-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        select { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 4px; font-size: 12px; }
 
-/* Responzivni Panel */
-.panel {
-    width: 95%;
-    max-width: 520px;
-    margin: 10px;
-    background: #2b2b2b;
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 0 30px #000;
-    box-sizing: border-box;
-}
+        .knobs { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .knob-container { display: flex; flex-direction: column; align-items: center; }
+        .knob { width: 60px; height: 60px; background: radial-gradient(#555, #111); border-radius: 50%; position: relative; }
+        .pointer { width: 3px; height: 25px; background: var(--red); position: absolute; top: 5px; left: 28px; transform-origin: bottom center; }
+        input[type=range] { width: 80px; margin-top: 10px; }
 
-h2 { text-align:center; color:#ff2b2b; margin-top:0; font-size: 1.5rem; }
+        .btn-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .btn { background: #3d3d3d; border: none; color: white; padding: 10px 5px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .btn.active { background: var(--red); box-shadow: 0 0 10px rgba(255,0,0,0.5); }
 
-/* LED Zasloni */
-.displays { display:flex; justify-content:space-between; margin-bottom:20px; gap: 10px; }
-.led-container { flex: 1; text-align: center; }
-.led {
-    background: #000; color: #ff0000;
-    font-family: 'Courier New', monospace;
-    font-size: clamp(24px, 8vw, 34px); /* Responzivna veličina slova */
-    padding: 12px 5px;
-    border-radius: 6px;
-    box-shadow: inset 0 0 18px #500;
-    cursor: pointer; /* Signalizira da se može kliknuti */
-    border: 1px solid #444;
-}
-.led:hover { border-color: #ff2b2b; }
-.label { font-size: 12px; color: #aaa; margin-top: 5px; text-transform: uppercase; }
-
-/* KNOBS */
-.knobs { display:flex; justify-content:space-around; flex-wrap: wrap; gap: 15px; }
-.knobBox { flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; }
-.knob {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: radial-gradient(#444,#111);
-    position: relative; touch-action: none;
-}
-.knob input { position:absolute; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 2; }
-.pointer {
-    width: 4px; height: 35px; background: red;
-    position: absolute; top: 5px; left: 38px;
-    transform-origin: bottom center; transition: transform 0.1s;
-}
-
-/* BUTTONS */
-.buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 25px; }
-.btn {
-    background: #333; color: #eee; border: none;
-    padding: 12px 5px; border-radius: 6px; cursor: pointer;
-    font-weight: bold; font-size: 0.9rem;
-}
-.btn.active { background: #ff2b2b; box-shadow: 0 0 12px red; }
-
-.info { margin-top: 20px; background: #111; padding: 15px; border-radius: 6px; font-size: 14px; line-height: 1.6; }
-span { color: #ff2b2b; font-weight: bold; }
-</style>
+        .info-panel { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 12px; border-left: 4px solid var(--red); }
+        b { color: var(--red); }
+    </style>
 </head>
-
 <body>
 
 <div class="panel">
-    <h2>LINCOLN QUICKMIG 300</h2>
+    <h2>LINCOLN QUICKMIG 300 PRO</h2>
 
-    <div class="displays">
-      <div class="led-container">
-        <div class="led" id="wire" onclick="manualInput('wire')">4.5</div>
-        <div class="label">ŽICA m/min</div>
-      </div>
-      <div class="led-container">
-        <div class="led" id="volt" onclick="manualInput('volt')">18.5</div>
-        <div class="label">NAPON V</div>
-      </div>
+    <div class="settings-row">
+        <div class="knob-container">
+            <select id="sel_mat" onchange="calcGas()">
+                <option value="1.0">Čelik Fe (1.0mm)</option>
+                <option value="0.8">Čelik Fe (0.8mm)</option>
+                <option value="1.2">Inox CrNi (1.0mm)</option>
+                <option value="1.0">Aluminij (1.0mm)</option>
+            </select>
+            <div class="label">Materijal/Žica</div>
+        </div>
+        <div class="knob-container">
+            <select id="sel_gas" onchange="calcGas()">
+                <option value="mje">Ar + CO2 (Mix)</option>
+                <option value="co2">CO2 100%</option>
+                <option value="ar">Argon 100%</option>
+            </select>
+            <div class="label">Zaštitni Plin</div>
+        </div>
+        <div class="knob-container">
+            <div class="led-box" style="font-size: 20px; padding: 14px 5px;" id="gas_flow">10.0</div>
+            <div class="label">Protok (L/min)</div>
+        </div>
+    </div>
+
+    <div class="grid-top">
+        <div class="led-container">
+            <div class="led-box" id="d_wire">4.5</div>
+            <div class="label">Brzina žice (m/min)</div>
+        </div>
+        <div class="led-container">
+            <div class="led-box" id="d_volt">18.5</div>
+            <div class="label">Napon (V)</div>
+        </div>
     </div>
 
     <div class="knobs">
-        <div class="knobBox">
-            <div class="knob">
-                <div class="pointer" id="p1"></div>
-                <input type="range" id="r_wire" min="10" max="150" value="45" oninput="updateFromSlider('wire', this.value)">
-            </div>
-            <div class="label">ŽICA / STRUJA</div>
+        <div class="knob-container">
+            <div class="knob"><div class="pointer" id="p1"></div></div>
+            <input type="range" id="r_wire" min="10" max="150" value="45" oninput="update(this.value, 'w')">
+            <div class="label">ŽICA</div>
         </div>
-
-        <div class="knobBox">
-            <div class="knob">
-                <div class="pointer" id="p2"></div>
-                <input type="range" id="r_volt" min="100" max="300" value="185" oninput="updateFromSlider('volt', this.value)">
-            </div>
+        <div class="knob-container">
+            <div class="knob"><div class="pointer" id="p2"></div></div>
+            <input type="range" id="r_volt" min="100" max="300" value="185" oninput="update(this.value, 'v')">
             <div class="label">NAPON</div>
         </div>
-
-        <div class="knobBox">
-            <div class="knob">
-                <div class="pointer" id="p3"></div>
-                <input type="range" min="1" max="10" value="5" oninput="ind.innerText=this.value; rotate(p3, this.value*30)">
-            </div>
-            <div class="label">INDUKTIVNOST</div>
-        </div>
     </div>
 
-    <div class="buttons">
-        <button class="btn active" id="b2" onclick="mode('2T')">2T</button>
-        <button class="btn" id="b4" onclick="mode('4T')">4T</button>
-        <button class="btn active" id="syn" onclick="synergic()">SYNERGIC</button>
-        <button class="btn" onclick="alert('Gas test OK')">GAS</button>
-        <button class="btn" onclick="alert('Wire inching...')">WIRE</button>
+    <div class="btn-group">
+        <button class="btn active" id="b2t" onclick="setM('2T')">2T</button>
+        <button class="btn" id="b4t" onclick="setM('4T')">4T</button>
+        <button class="btn active" id="bsy" onclick="toggleSy()">SYN</button>
+        <button class="btn" onclick="alert('Gas Test OK')">GAS</button>
     </div>
 
-    <div class="info">
-        Materijal: <b>Čelik / Ograda</b><br>
-        Žica: 1.0 mm | Induktivnost: <span id="ind">5</span><br>
-        Način: <span id="m">2T</span> | Synergic: <span id="s">ON</span>
+    <div class="info-panel" id="status">
+        Preporučeni protok plina: <b id="inf_gas">10.0 L/min</b><br>
+        Synergic: <b id="inf_syn">ON</b> | Mode: <b id="inf_mode">2T</b>
     </div>
 </div>
 
 <script>
-let synOn = true;
+    let syn = true;
 
-function rotate(p, v) { p.style.transform = "rotate(" + v + "deg)"; }
-
-// Funkcija za ažuriranje putem slidera
-function updateFromSlider(type, val) {
-    if (type === 'wire') {
-        let w = (val / 10).toFixed(1);
-        document.getElementById('wire').innerText = w;
-        rotate(p1, (val-10) * 2); // Rotacija prilagođena skali
-        
-        if (synOn) {
-            let nv = (14 + parseFloat(w)).toFixed(1);
-            document.getElementById('volt').innerText = nv;
-            document.getElementById('r_volt').value = nv * 10;
-            rotate(p2, (nv * 10 - 100) * 1.5);
-        }
-    } else {
-        if (!synOn) {
-            document.getElementById('volt').innerText = (val / 10).toFixed(1);
-            rotate(p2, (val - 100) * 1.5);
+    function update(val, type) {
+        if (type === 'w') {
+            let ws = (val/10).toFixed(1);
+            document.getElementById('d_wire').innerText = ws;
+            document.getElementById('p1').style.transform = `rotate(${(val-80)*2}deg)`;
+            if (syn) {
+                let v = (14 + parseFloat(ws)).toFixed(1);
+                document.getElementById('d_volt').innerText = v;
+                document.getElementById('r_volt').value = v * 10;
+                document.getElementById('p2').style.transform = `rotate(${(v*10-200)*1.5}deg)`;
+            }
+        } else if (!syn) {
+            document.getElementById('d_volt').innerText = (val/10).toFixed(1);
+            document.getElementById('p2').style.transform = `rotate(${(val-200)*1.5}deg)`;
         }
     }
-}
 
-// RUČNI UNOS KLIKOM NA BROJ
-function manualInput(type) {
-    let current = document.getElementById(type).innerText;
-    let val = prompt("Unesite vrijednost za " + (type === 'wire' ? 'brzinu žice' : 'napon') + ":", current);
-    
-    if (val !== null && !isNaN(val)) {
-        val = parseFloat(val);
-        if (type === 'wire') {
-            if (val >= 1 && val <= 15) {
-                document.getElementById('r_wire').value = val * 10;
-                updateFromSlider('wire', val * 10);
-            }
-        } else {
-            if (val >= 10 && val <= 30) {
-                document.getElementById('r_volt').value = val * 10;
-                updateFromSlider('volt', val * 10);
-            }
-        }
+    function calcGas() {
+        let wireSize = parseFloat(document.getElementById('sel_mat').value);
+        let flow = (wireSize * 10).toFixed(1);
+        document.getElementById('gas_flow').innerText = flow;
+        document.getElementById('inf_gas').innerText = flow + " L/min";
     }
-}
 
-function mode(x) {
-    m.innerText = x;
-    document.getElementById("b2").classList.remove("active");
-    document.getElementById("b4").classList.remove("active");
-    document.getElementById("b" + x[0]).classList.add("active");
-}
+    function toggleSy() {
+        syn = !syn;
+        document.getElementById('bsy').classList.toggle('active');
+        document.getElementById('inf_syn').innerText = syn ? "ON" : "OFF";
+    }
 
-function synergic() {
-    synOn = !synOn;
-    syn.classList.toggle("active");
-    s.innerText = synOn ? "ON" : "OFF";
-}
+    function setM(m) {
+        document.getElementById('b2t').classList.toggle('active', m==='2T');
+        document.getElementById('b4t').classList.toggle('active', m==='4T');
+        document.getElementById('inf_mode').innerText = m;
+    }
 
-// Inicijalna rotacija
-rotate(p1, 90);
-rotate(p2, 120);
-rotate(p3, 150);
+    window.onload = () => { update(45, 'w'); calcGas(); };
 </script>
-
 </body>
 </html>
