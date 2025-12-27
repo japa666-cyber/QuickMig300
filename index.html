@@ -3,190 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUICKMIG 300 – ULTIMATE SIM + TABLES</title>
+    <title>QUICKMIG 300 – TOTAL CONTROL</title>
     <style>
         :root { --red: #ff2b2b; --green: #2ecc71; --blue: #3498db; --bg: #111; }
         body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: #eee; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        .panel { width: 95%; max-width: 550px; background: #222; border-radius: 20px; padding: 25px; box-shadow: 0 20px 60px #000; border: 2px solid #333; }
-        
-        /* Zasloni */
-        .display-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .led { background: #000; color: #f00; font-family: monospace; font-size: 30px; text-align: center; padding: 15px 5px; border-radius: 10px; border: 2px solid #444; box-shadow: inset 0 0 15px #500; }
-        .led.gas { color: var(--blue); box-shadow: inset 0 0 15px #00334d; }
+        .panel { width: 95%; max-width: 550px; background: #222; border-radius: 20px; padding: 25px; box-shadow: 0 20px 60px #000; border: 2px solid #444; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .led { background: #000; color: #f00; font-family: monospace; font-size: 28px; text-align: center; padding: 12px 5px; border-radius: 8px; border: 2px solid #444; box-shadow: inset 0 0 15px #500; }
         .label { font-size: 10px; color: #888; text-align: center; margin-top: 5px; font-weight: bold; text-transform: uppercase; }
-
-        /* Setup */
-        .setup { background: #1a1a1a; padding: 15px; border-radius: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        select { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 5px; cursor: pointer; }
-
-        /* Simulator vara */
-        .weld-zone { height: 100px; background: #000; border-radius: 10px; margin: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid #444; overflow: hidden; }
-        .bead-visual { height: 12px; border-radius: 6px; transition: 0.3s; width: 0%; }
-        .spark { position: absolute; width: 100%; height: 100%; pointer-events: none; display: none; background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%); }
-
-        /* Gumbi */
-        .weld-btn { 
-            width: 100%; padding: 20px; border-radius: 12px; border: none; font-weight: bold; font-size: 18px;
-            color: white; cursor: pointer; background: #444; transition: 0.1s; border-bottom: 5px solid #111; margin-bottom: 10px;
-        }
-        .weld-btn:active { background: var(--red); transform: translateY(3px); border-bottom-width: 2px; }
         
-        /* Tabela */
-        .table-container { width: 95%; max-width: 550px; margin-top: 30px; background: #1a1a1a; border-radius: 10px; padding: 15px; border: 1px solid #333; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-        th { color: var(--red); border-bottom: 1px solid #444; padding: 8px; }
-        td { padding: 8px; border-bottom: 1px solid #222; }
-        tr:hover { background: #252525; }
+        .setup-box { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
+        .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
+        select, input[type=range] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; width: 100%; box-sizing: border-box; }
 
-        .active-welding { display: block !important; animation: flicker 0.05s infinite; }
-        @keyframes flicker { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .weld-zone { height: 100px; background: #000; border-radius: 10px; margin: 15px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid #444; overflow: hidden; }
+        .bead { height: 12px; border-radius: 6px; transition: 0.3s; width: 0%; }
+        .weld-btn { width: 100%; padding: 20px; border-radius: 12px; border: none; font-weight: bold; font-size: 18px; color: white; cursor: pointer; background: #444; border-bottom: 5px solid #111; }
+        .weld-btn:active { background: var(--red); transform: translateY(3px); border-bottom-width: 2px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
+        th { background: #333; color: var(--red); padding: 8px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h2 style="text-align:center; color:var(--red); margin:0 0 20px 0;">LINCOLN QUICKMIG 300</h2>
+    <h2 style="text-align:center; color:var(--red); margin:0 0 15px 0;">QUICKMIG 300 MASTER</h2>
 
-    <div class="display-group">
-        <div><div class="led" id="d_w">5.0</div><div class="label">Žica m/min</div></div>
-        <div><div class="led" id="d_v">19.0</div><div class="label">Napon (V)</div></div>
-        <div><div class="led gas" id="d_g">10.0</div><div class="label">Plin L/min</div></div>
+    <div class="grid-3">
+        <div><div class="led" id="d_w">5.0</div><div class="label">m/min</div></div>
+        <div><div class="led" id="d_v">19.0</div><div class="label">Napon V</div></div>
+        <div><div class="led" id="d_g" style="color:var(--blue)">10.0</div><div class="label">Plin L/min</div></div>
     </div>
 
-    <div class="setup">
-        <div>
-            <label class="label">Debljina Materijala</label>
-            <select id="set_t" onchange="preset()">
-                <option value="1">1.0 mm</option>
-                <option value="2">2.0 mm</option>
-                <option value="3" selected>3.0 mm</option>
-                <option value="5">5.0 mm</option>
-                <option value="8">8.0 mm+</option>
-            </select>
+    <div class="setup-box">
+        <div class="setup-row">
+            <div><label class="label">Debljina (mm)</label><select id="t_in" onchange="preset()"><option value="1">1mm</option><option value="3" selected>3mm</option><option value="5">5mm</option><option value="8">8mm</option></select></div>
+            <div><label class="label">Kut (Tehnika)</label><select id="a_in" onchange="sync()"><option value="push">Guranje (Plitko)</option><option value="pull" selected>Vučenje (Duboko)</option></select></div>
         </div>
-        <div>
-            <label class="label">Vrsta Plina</label>
-            <select id="set_g" onchange="preset()">
-                <option value="10">Mješavina (Ar+CO2)</option>
-                <option value="12">CO2 100%</option>
-                <option value="8">Argon 100%</option>
-            </select>
+        <div style="margin-top:10px;">
+            <label class="label">Brzina Ruke: <span id="v_speed">6</span> mm/s</label>
+            <input type="range" id="s_in" min="2" max="15" value="6" oninput="sync()">
         </div>
     </div>
 
-    <div class="weld-zone" id="w_zone">
-        <div class="spark" id="spark"></div>
-        <div id="bead" class="bead-visual"></div>
-        <div id="w_info" style="font-size: 13px; margin-top: 10px; font-weight: bold; color: #888;">DRŽI ZA ZAVARIVANJE</div>
+    <div class="weld-zone">
+        <div id="bead" class="bead"></div>
+        <div id="info" style="font-size:12px; margin-top:10px; font-weight:bold;">SPREMAN</div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+    <div class="setup-row" style="margin-bottom:15px;">
         <input type="range" id="sl_w" min="10" max="150" value="50" oninput="sync()">
         <input type="range" id="sl_v" min="100" max="320" value="190" oninput="sync()">
     </div>
 
-    <button class="weld-btn" onmousedown="start()" onmouseup="stop()" ontouchstart="start()" ontouchend="stop()">START WELD</button>
+    <button class="weld-btn" onmousedown="start()" onmouseup="stop()" ontouchstart="start()" ontouchend="stop()">DRŽI ZA VAR (WELD)</button>
 </div>
 
-<div class="table-container">
-    <h3 style="color:var(--red); margin-top:0; font-size: 16px;">TABLICA PARAMETARA (Žica 1.0mm)</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Materijal</th>
-                <th>Žica (m/min)</th>
-                <th>Napon (V)</th>
-                <th>Plin (L/min)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>1.0 mm</td><td>2.0 - 2.5</td><td>15.5 - 16.5</td><td>8 - 10</td></tr>
-            <tr><td>2.0 mm</td><td>3.5 - 4.2</td><td>17.5 - 18.5</td><td>10 - 12</td></tr>
-            <tr><td>3.0 mm</td><td>5.0 - 5.8</td><td>19.0 - 20.5</td><td>10 - 12</td></tr>
-            <tr><td>5.0 mm</td><td>8.0 - 9.5</td><td>22.0 - 24.0</td><td>12 - 14</td></tr>
-            <tr><td>8.0 mm+</td><td>11.0 - 13.0</td><td>26.0 - 28.0</td><td>14 - 16</td></tr>
-        </tbody>
-    </table>
-</div>
+<table>
+    <thead><tr><th>Debljina</th><th>Brzina Ruke</th><th>Kut</th><th>Rezultat</th></tr></thead>
+    <tbody>
+        <tr><td>1-2 mm</td><td>8-12 mm/s</td><td>Guranje</td><td>Nema progorijevanja</td></tr>
+        <tr><td>3-5 mm</td><td>5-8 mm/s</td><td>Neutralno</td><td>Optimalno</td></tr>
+        <tr><td>8+ mm</td><td>3-5 mm/s</td><td>Vučenje</td><td>Maks. penetracija</td></tr>
+    </tbody>
+</table>
 
 <script>
-    let isWelding = false;
-    let audioCtx = null;
-    let noise = null;
+    let audioCtx, noise;
 
     function preset() {
-        let t = parseFloat(document.getElementById('set_t').value);
-        let gFactor = parseFloat(document.getElementById('set_g').value);
-        let wire = t * 1.8;
-        let volt = 14 + wire;
-        document.getElementById('sl_w').value = wire * 10;
-        document.getElementById('sl_v').value = volt * 10;
-        document.getElementById('d_g').innerText = (1.0 * gFactor).toFixed(1);
+        let t = document.getElementById('t_in').value;
+        document.getElementById('sl_w').value = t * 18;
+        document.getElementById('sl_v').value = (14 + t * 1.8) * 10;
         sync();
     }
 
     function sync() {
         let w = document.getElementById('sl_w').value / 10;
         let v = document.getElementById('sl_v').value / 10;
+        let s = document.getElementById('s_in').value;
+        let a = document.getElementById('a_in').value;
+        
         document.getElementById('d_w').innerText = w.toFixed(1);
         document.getElementById('d_v').innerText = v.toFixed(1);
-        analyze(w, v);
+        document.getElementById('v_speed').innerText = s;
+        
+        analyze(w, v, s, a);
     }
 
-    function analyze(w, v) {
-        let diff = v - (14 + w);
+    function analyze(w, v, s, a) {
         const bead = document.getElementById('bead');
-        const info = document.getElementById('w_info');
-
-        if (Math.abs(diff) <= 1.2) {
-            bead.style.height = "12px"; bead.style.background = "var(--green)";
-            info.innerText = "OPTIMALNO: 'PRŽENJE SLANINE'"; info.style.color = "var(--green)";
-        } else if (diff < -1.2) {
-            bead.style.height = "22px"; bead.style.background = "var(--red)";
-            info.innerText = "HLADNO: ŽICA ZABIJA"; info.style.color = "var(--red)";
+        const info = document.getElementById('info');
+        let diff = v - (14 + w);
+        
+        // Vizualizacija penetracije na temelju kuta i brzine
+        let height = (a === 'pull' ? 18 : 8);
+        if (s < 4) height += 10; else if (s > 10) height -= 5;
+        
+        bead.style.height = height + "px";
+        
+        if (Math.abs(diff) < 1.2 && s > 4 && s < 10) {
+            bead.style.background = "var(--green)";
+            info.innerText = "IDEALAN VAR"; info.style.color = "var(--green)";
         } else {
-            bead.style.height = "5px"; bead.style.background = "#f39c12";
-            info.innerText = "VRUĆE: PREVIŠE PRSKANJA"; info.style.color = "#f39c12";
+            bead.style.background = (diff < 0 || s > 10) ? "var(--red)" : "var(--blue)";
+            info.innerText = (diff < 0 || s > 10) ? "LOŠA PENETRACIJA" : "PREVIŠE TOPLINE";
+            info.style.color = bead.style.background;
         }
     }
 
     function start() {
-        isWelding = true;
-        document.getElementById('spark').classList.add('active-welding');
-        document.getElementById('bead').style.width = "85%";
-        playWeldSound();
-    }
-
-    function stop() {
-        isWelding = false;
-        document.getElementById('spark').classList.remove('active-welding');
-        document.getElementById('bead').style.width = "0%";
-        if(noise) { noise.stop(); noise = null; }
-    }
-
-    function playWeldSound() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let bufferSize = audioCtx.sampleRate * 1;
-        let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        let data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
+        if (!audioCtx) audioCtx = new AudioContext();
+        let buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+        let d = buf.getChannelData(0);
+        for (let i = 0; i < audioCtx.sampleRate; i++) d[i] = Math.random() * 2 - 1;
         noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        
+        noise.buffer = buf; noise.loop = true;
         let filter = audioCtx.createBiquadFilter();
-        let diff = (document.getElementById('sl_v').value / 10) - (14 + document.getElementById('sl_w').value / 10);
-        
-        filter.type = Math.abs(diff) <= 1.2 ? 'bandpass' : (diff < 0 ? 'highpass' : 'lowpass');
-        filter.frequency.value = 800;
-
-        noise.connect(filter);
-        filter.connect(audioCtx.destination);
+        filter.frequency.value = 1000;
+        noise.connect(filter); filter.connect(audioCtx.destination);
         noise.start();
+        document.getElementById('bead').style.width = "90%";
     }
 
+    function stop() { if(noise) noise.stop(); document.getElementById('bead').style.width = "0%"; }
     window.onload = preset;
 </script>
 </body>
