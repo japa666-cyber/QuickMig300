@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUICKMIG 300 – SYNERGIC MASTER</title>
+    <title>QUICKMIG 300 – INDUCTANCE & SPEED MASTER</title>
     <style>
         :root { --red: #ff2b2b; --green: #2ecc71; --blue: #3498db; --bg: #111; }
         body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: #eee; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -11,158 +11,139 @@
         
         /* Zasloni */
         .display-unit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .led { background: #000; color: #f00; font-family: monospace; font-size: 28px; text-align: center; padding: 15px 5px; border-radius: 10px; border: 2px solid #444; box-shadow: inset 0 0 15px #500; }
-        .led.gas { color: var(--blue); box-shadow: inset 0 0 15px #00334d; }
+        .led { background: #000; color: #f00; font-family: monospace; font-size: 24px; text-align: center; padding: 12px 5px; border-radius: 8px; border: 2px solid #333; box-shadow: inset 0 0 10px #500; }
         .label { font-size: 10px; color: #888; text-align: center; margin-top: 5px; font-weight: bold; text-transform: uppercase; }
 
-        /* Synergic Switch */
-        .syn-toggle { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; background: #444; color: #fff; }
-        .syn-toggle.active { background: var(--red); box-shadow: 0 0 15px rgba(255,43,43,0.4); }
+        /* Setup sekcije */
+        .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
+        select, input[type=range] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
 
-        .setup-section { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        select, input[type=range] { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-
-        .weld-zone { height: 100px; background: #000; border-radius: 10px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #444; position: relative; overflow: hidden; }
+        /* Vizualizacija */
+        .weld-zone { height: 100px; background: #000; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #444; position: relative; overflow: hidden; }
         .bead { height: 15px; border-radius: 10px; transition: 0.3s; width: 0; }
-        .weld-btn { width: 100%; padding: 20px; border-radius: 12px; border: none; font-weight: bold; font-size: 18px; color: white; cursor: pointer; background: #333; border-bottom: 6px solid #111; letter-spacing: 2px; }
+        
+        .weld-btn { width: 100%; padding: 20px; border-radius: 12px; border: none; font-weight: bold; font-size: 18px; color: white; cursor: pointer; background: #333; border-bottom: 6px solid #111; text-transform: uppercase; }
         .weld-btn:active { background: var(--red); transform: translateY(4px); border-bottom-width: 2px; }
+
+        .status-box { font-size: 12px; font-weight: bold; margin-top: 10px; text-align: center; min-height: 20px; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h2 style="text-align:center; color:var(--red); margin: 0 0 20px 0;">QUICKMIG 300 SYNERGIC</h2>
-
-    <button id="synBtn" class="syn-toggle active" onclick="toggleSynergic()">SYNERGIC MOD: UKLJUČEN</button>
+    <h2 style="text-align:center; color:var(--red); margin: 0 0 20px 0;">QUICKMIG 300 ADVANCED</h2>
 
     <div class="display-unit">
-        <div><div class="led" id="d_w">4.5</div><div class="label">Žica m/min</div></div>
-        <div><div class="led" id="d_v">18.5</div><div class="label">Napon (V)</div></div>
-        <div><div class="led gas" id="d_g">10.0</div><div class="label">Plin L/min</div></div>
+        <div><div class="led" id="d_w">5.0</div><div class="label">m/min</div></div>
+        <div><div class="led" id="d_v">19.5</div><div class="label">Napon V</div></div>
+        <div><div class="led" id="d_ind" style="color:var(--green)">0</div><div class="label">Induktivnost</div></div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-grid">
         <div>
-            <label class="label">Materijal</label>
-            <select id="m_type" onchange="applyPreset()">
-                <option value="fe">Čelik (Fe)</option>
-                <option value="inox">Inox (CrNi)</option>
-                <option value="al">Aluminij (Al)</option>
-            </select>
-        </div>
-        <div>
-            <label class="label">Debljina (mm)</label>
-            <select id="m_thick" onchange="applyPreset()">
+            <label class="label">Debljina Materijala</label>
+            <select id="m_thick" onchange="preset()">
                 <option value="1">1.0 mm</option>
                 <option value="3" selected>3.0 mm</option>
                 <option value="5">5.0 mm</option>
-                <option value="8">8.0 mm+</option>
+                <option value="10">10.0 mm</option>
             </select>
+        </div>
+        <div>
+            <label class="label">Brzina Ruke: <span id="v_speed">6</span> mm/s</label>
+            <input type="range" id="sl_speed" min="2" max="15" value="6" oninput="sync()">
+        </div>
+        <div style="grid-column: span 2;">
+            <label class="label">Induktivnost (Prigušnica): <span id="ind_val">0</span></label>
+            <input type="range" id="sl_ind" min="-10" max="10" value="0" oninput="sync()">
         </div>
     </div>
 
     <div class="weld-zone">
         <div id="bead" class="bead"></div>
-        <div id="info" style="font-size:13px; font-weight:bold; margin-top:10px; color:#888;">DRŽI ZA ZAVARIVANJE</div>
+        <div id="status" class="status-box">SPREMAN</div>
     </div>
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-        <div>
-            <input type="range" id="sl_w" min="10" max="150" value="45" oninput="handleInput('w')">
-            <div class="label">Podešavanje Žice</div>
-        </div>
-        <div>
-            <input type="range" id="sl_v" min="100" max="320" value="185" oninput="handleInput('v')">
-            <div class="label">Podešavanje Napona</div>
-        </div>
+        <input type="range" id="sl_w" min="10" max="150" value="50" oninput="sync()">
+        <input type="range" id="sl_v" min="100" max="320" value="195" oninput="sync()">
     </div>
 
-    <button class="weld-btn" onmousedown="startWeld()" onmouseup="stopWeld()" ontouchstart="startWeld()" ontouchend="stopWeld()">WELD</button>
+    <button class="weld-btn" onmousedown="startWeld()" onmouseup="stopWeld()" ontouchstart="startWeld()" ontouchend="stopWeld()">ZAVARI (WELD)</button>
 </div>
 
 <script>
-    let isSynergic = true;
-    let audioCtx, noise;
+    let audioCtx, noise, filter;
 
-    function toggleSynergic() {
-        isSynergic = !isSynergic;
-        const btn = document.getElementById('synBtn');
-        btn.classList.toggle('active');
-        btn.innerText = isSynergic ? "SYNERGIC MOD: UKLJUČEN" : "MANUALNI MOD: UKLJUČEN";
-        syncUI();
-    }
-
-    function applyPreset() {
-        let material = document.getElementById('m_type').value;
-        let thickness = parseFloat(document.getElementById('m_thick').value);
-        
-        // Osnovna krivulja (Synergic data)
-        let wire = thickness * 1.5;
+    function preset() {
+        let t = parseFloat(document.getElementById('m_thick').value);
+        let wire = t * 1.7;
         let volt = 14 + (wire * 1.1);
-
-        if (material === 'al') { wire *= 1.3; volt += 2.5; }
-        if (material === 'inox') { volt -= 0.4; }
-
         document.getElementById('sl_w').value = wire * 10;
-        if (isSynergic) {
-            document.getElementById('sl_v').value = volt * 10;
-        }
+        document.getElementById('sl_v').value = volt * 10;
         
-        // Plin kalkulacija
-        let gas = (thickness < 3) ? 10 : (thickness < 6 ? 12 : 15);
-        document.getElementById('d_g').innerText = gas.toFixed(1);
-
-        syncUI();
+        // Preporučena brzina ruke za tu debljinu
+        let recSpeed = (t < 2) ? 10 : (t < 5 ? 7 : 4);
+        document.getElementById('sl_speed').value = recSpeed;
+        
+        sync();
     }
 
-    function handleInput(type) {
-        if (isSynergic && type === 'w') {
-            let w = document.getElementById('sl_w').value / 10;
-            let material = document.getElementById('m_type').value;
-            let v = 14 + (w * 1.1);
-            if (material === 'al') v += 2.5;
-            document.getElementById('sl_v').value = v * 10;
-        }
-        syncUI();
-    }
-
-    function syncUI() {
+    function sync() {
         let w = document.getElementById('sl_w').value / 10;
         let v = document.getElementById('sl_v').value / 10;
+        let ind = document.getElementById('sl_ind').value;
+        let speed = document.getElementById('sl_speed').value;
+
         document.getElementById('d_w').innerText = w.toFixed(1);
         document.getElementById('d_v').innerText = v.toFixed(1);
+        document.getElementById('d_ind').innerText = ind;
+        document.getElementById('ind_val').innerText = ind;
+        document.getElementById('v_speed').innerText = speed;
+
+        analyze(w, v, speed, ind);
         
-        // Analiza kvalitete
-        let idealV = 14 + (w * 1.1);
-        if (document.getElementById('m_type').value === 'al') idealV += 2.5;
-        
-        let diff = v - idealV;
-        const info = document.getElementById('info');
+        // Ažuriraj zvuk ako radi
+        if (filter) filter.frequency.value = 1000 + (parseInt(ind) * 50);
+    }
+
+    function analyze(w, v, s, ind) {
         const bead = document.getElementById('bead');
+        const status = document.getElementById('status');
+        let idealV = 14 + (w * 1.1);
+        let diff = v - idealV;
+        
+        // Vizualni efekti induktivnosti na širinu vara
+        let widthBase = 15 + (parseInt(ind) / 2);
+        bead.style.height = widthBase + "px";
 
         if (Math.abs(diff) < 1.2) {
-            info.innerText = "OPTIMALAN LUK"; info.style.color = "var(--green)";
+            status.innerText = "OPTIMALAN LUK | BRZINA RUKE OK";
+            status.style.color = "var(--green)";
             bead.style.background = "var(--green)";
-        } else if (diff < -1.2) {
-            info.innerText = "HLADNO - ZABIJANJE ŽICE"; info.style.color = "var(--red)";
-            bead.style.background = "var(--red)";
         } else {
-            info.innerText = "VRUĆE - PREDUG LUK"; info.style.color = "#f39c12";
-            bead.style.background = "#f39c12";
+            status.innerText = diff < 0 ? "HLADAN VAR (HARD)" : "PREDUG LUK (SOFT)";
+            status.style.color = diff < 0 ? "var(--red)" : "var(--blue)";
+            bead.style.background = status.style.color;
         }
     }
 
-    // Audio i Simulacija
     function startWeld() {
         if (!audioCtx) audioCtx = new AudioContext();
         let buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
         let d = buf.getChannelData(0);
         for (let i = 0; i < audioCtx.sampleRate; i++) d[i] = Math.random() * 2 - 1;
+        
         noise = audioCtx.createBufferSource();
         noise.buffer = buf; noise.loop = true;
-        let filter = audioCtx.createBiquadFilter();
-        filter.frequency.value = 1000;
-        noise.connect(filter); filter.connect(audioCtx.destination);
+        
+        filter = audioCtx.createBiquadFilter();
+        let ind = document.getElementById('sl_ind').value;
+        filter.type = "lowpass";
+        filter.frequency.value = 1000 + (parseInt(ind) * 50);
+        
+        noise.connect(filter);
+        filter.connect(audioCtx.destination);
         noise.start();
         document.getElementById('bead').style.width = "90%";
     }
@@ -172,7 +153,7 @@
         document.getElementById('bead').style.width = "0%";
     }
 
-    window.onload = applyPreset;
+    window.onload = preset;
 </script>
 </body>
 </html>
