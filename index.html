@@ -3,175 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUICKMIG 300 – FULL SIMULATOR</title>
+    <title>QUICKMIG 300 – EXPERT</title>
     <style>
-        :root { --red: #ff2b2b; --green: #2ecc71; --orange: #f39c12; }
-        body { background: #111; font-family: 'Segoe UI', sans-serif; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .panel { width: 95%; max-width: 500px; background: #222; border-radius: 20px; padding: 25px; box-shadow: 0 20px 60px #000; border: 2px solid #333; }
+        :root { --red: #ff2b2b; --green: #2ecc71; --gray: #2b2b2b; }
+        body { background: #111; font-family: sans-serif; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .panel { width: 95%; max-width: 550px; background: var(--gray); border-radius: 20px; padding: 25px; box-shadow: 0 20px 60px #000; border: 2px solid #444; }
         
         /* Zasloni */
-        .display-unit { display: flex; gap: 15px; margin-bottom: 25px; }
-        .led { flex: 1; background: #000; color: #f00; font-family: monospace; font-size: 40px; text-align: center; padding: 15px; border-radius: 10px; border: 2px solid #444; box-shadow: inset 0 0 15px #500; }
-        .label { font-size: 11px; color: #888; text-align: center; margin-top: 5px; letter-spacing: 1px; }
+        .grid-display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .led { background: #000; color: #f00; font-family: monospace; font-size: 28px; text-align: center; padding: 12px 5px; border-radius: 8px; border: 2px solid #333; }
+        .label { font-size: 10px; color: #888; text-align: center; margin-top: 5px; text-transform: uppercase; font-weight: bold; }
 
-        /* Analiza */
-        .status-box { background: #000; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #444; min-height: 60px; transition: 0.3s; }
-        .status-title { font-weight: bold; font-size: 18px; margin-bottom: 5px; }
-        .status-desc { font-size: 13px; color: #888; }
+        /* Odabir materijala */
+        .setup-section { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: 1px solid #333; }
+        select { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 5px; width: 100%; }
 
-        /* Kontrole */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 25px 0; }
-        input[type=range] { width: 100%; cursor: pointer; accent-color: var(--red); }
+        /* Analiza vara */
+        .weld-preview { height: 60px; background: #222; border-radius: 10px; margin: 20px 0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px dashed #555; }
+        .bead { height: 15px; border-radius: 10px; transition: 0.3s; }
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        input[type=range] { width: 100%; accent-color: var(--red); }
         
-        .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; background: #333; }
-        .btn.active { background: var(--red); box-shadow: 0 0 20px rgba(255,43,43,0.4); }
+        .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer; background: #333; }
+        .btn.active { background: var(--red); box-shadow: 0 0 15px rgba(255,43,43,0.4); }
         
-        /* Dinamičke klase za rezultat */
-        .good-weld { border-left-color: var(--green); color: var(--green); }
-        .cold-weld { border-left-color: var(--red); color: var(--red); }
-        .hot-weld { border-left-color: var(--orange); color: var(--orange); }
+        .info-box { font-size: 13px; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 4px solid var(--red); }
+        b { color: var(--red); }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h2 style="text-align:center; color:var(--red); letter-spacing:2px;">LINCOLN PRO SIM</h2>
+    <h2 style="text-align:center; color:var(--red); margin-top:0;">QUICKMIG 300 EXPERT</h2>
 
-    <div class="display-unit">
+    <div class="grid-display">
         <div>
-            <div class="led" id="val_w">5.0</div>
-            <div class="label">ŽICA m/min</div>
+            <div class="led" id="d_wire">5.0</div>
+            <div class="label">Žica (m/min)</div>
         </div>
         <div>
-            <div class="led" id="val_v">19.0</div>
-            <div class="label">NAPON V</div>
+            <div class="led" id="d_volt">19.0</div>
+            <div class="label">Napon (V)</div>
+        </div>
+        <div>
+            <div class="led" id="d_gas" style="color: #0af;">10.0</div>
+            <div class="label">Plin (L/min)</div>
         </div>
     </div>
 
-    <div class="status-box" id="box">
-        <div class="status-title" id="st_title">SPREMAN ZA RAD</div>
-        <div class="status-desc" id="st_desc">Pritisni gumb 'WELD' za simulaciju luka.</div>
+    <div class="setup-section">
+        <div>
+            <label class="label">Debljina Materijala</label>
+            <select id="sel_thick" onchange="autoSetup()">
+                <option value="1.0">1.0 mm</option>
+                <option value="2.0">2.0 mm</option>
+                <option value="3.0" selected>3.0 mm</option>
+                <option value="5.0">5.0 mm</option>
+                <option value="8.0">8.0 mm+</option>
+            </select>
+        </div>
+        <div>
+            <label class="label">Vrsta Plina</label>
+            <select id="sel_gas" onchange="autoSetup()">
+                <option value="10">Ar + CO2 (Mix)</option>
+                <option value="12">CO2 100%</option>
+                <option value="8">Argon (Al/Inox)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="weld-preview" id="weld_box">
+        <div id="weld_bead" class="bead"></div>
+        <span id="weld_label" style="position:absolute; font-size:12px; font-weight:bold;"></span>
     </div>
 
     <div class="controls">
         <div>
-            <input type="range" id="sl_w" min="10" max="150" value="50" oninput="run()">
-            <div class="label">BRZINA ŽICE</div>
+            <input type="range" id="sl_w" min="10" max="150" value="50" oninput="manualAdjust()">
+            <div class="label">Ručna Žica</div>
         </div>
         <div>
-            <input type="range" id="sl_v" min="100" max="320" value="190" oninput="run()">
-            <div class="label">NAPON</div>
+            <input type="range" id="sl_v" min="100" max="320" value="190" oninput="manualAdjust()">
+            <div class="label">Ručni Napon</div>
         </div>
     </div>
 
-    <div style="display:flex; gap:10px;">
-        <button id="synBtn" class="btn active" onclick="toggleSyn()">SYNERGIC</button>
-        <button id="weldBtn" class="btn" onmousedown="startWeld()" onmouseup="stopWeld()" ontouchstart="startWeld()" ontouchend="stopWeld()">DRŽI ZA VAR (WELD)</button>
+    <button id="synBtn" class="btn active" onclick="toggleSyn()">SYNERGIC MOD: UKLJUČEN</button>
+
+    <div class="info-box">
+        Materijal: <b>Čelik (Fe)</b> | Žica: <b>1.0 mm</b><br>
+        Status plina: <span id="gas_status">Protok optimalan za 1.0mm žicu.</span>
     </div>
 </div>
 
 <script>
-    let syn = true;
-    let audioCtx = null;
-    let oscillator = null;
-    let noiseNode = null;
+    let synergic = true;
+
+    function autoSetup() {
+        const thickness = parseFloat(document.getElementById('sel_thick').value);
+        const gasFactor = parseFloat(document.getElementById('sel_gas').value);
+        
+        // Automatsko postavljanje parametara na temelju debljine
+        let targetWire = thickness * 1.8;
+        let targetVolt = 14 + targetWire;
+
+        document.getElementById('sl_w').value = targetWire * 10;
+        document.getElementById('sl_v').value = targetVolt * 10;
+
+        // Izračun plina (Promjer žice 1.0mm * faktor)
+        let gasFlow = (1.0 * gasFactor).toFixed(1);
+        document.getElementById('d_gas').innerText = gasFlow;
+
+        updateUI();
+    }
+
+    function manualAdjust() {
+        if (synergic) {
+            let w = document.getElementById('sl_w').value / 10;
+            document.getElementById('sl_v').value = (14 + w) * 10;
+        }
+        updateUI();
+    }
 
     function toggleSyn() {
-        syn = !syn;
-        document.getElementById('synBtn').classList.toggle('active');
-        run();
+        synergic = !synergic;
+        const btn = document.getElementById('synBtn');
+        btn.classList.toggle('active');
+        btn.innerText = synergic ? "SYNERGIC MOD: UKLJUČEN" : "MANUALNI MOD: UKLJUČEN";
     }
 
-    function run() {
+    function updateUI() {
         let w = document.getElementById('sl_w').value / 10;
         let v = document.getElementById('sl_v').value / 10;
+        
+        document.getElementById('d_wire').innerText = w.toFixed(1);
+        document.getElementById('d_volt').innerText = v.toFixed(1);
 
-        if (syn) {
-            v = 14 + w;
-            document.getElementById('sl_v').value = v * 10;
-        }
-
-        document.getElementById('val_w').innerText = w.toFixed(1);
-        document.getElementById('val_v').innerText = v.toFixed(1);
-
-        updateAnalysis(w, v);
+        analyzeWeld(w, v);
     }
 
-    function updateAnalysis(w, v) {
-        const b = document.getElementById('box');
-        const t = document.getElementById('st_title');
-        const d = document.getElementById('st_desc');
-        let diff = v - (14 + w);
-
-        b.className = "status-box";
+    function analyzeWeld(w, v) {
+        const bead = document.getElementById('weld_bead');
+        const label = document.getElementById('weld_label');
+        let idealV = 14 + w;
+        let diff = v - idealV;
 
         if (Math.abs(diff) <= 1.2) {
-            b.classList.add('good-weld');
-            t.innerText = "OPTIMALAN LUK";
-            d.innerText = "Savršen prijenos kapi. Zvuk 'prženja slanine'.";
+            bead.style.width = "80%";
+            bead.style.background = "var(--green)";
+            bead.style.boxShadow = "0 0 15px var(--green)";
+            label.innerText = "DOBAR PROFIL VARA";
+            label.style.color = "var(--green)";
         } else if (diff < -1.2) {
-            b.classList.add('cold-weld');
-            t.innerText = "HLADAN VAR";
-            d.innerText = "Žica zabija u talinu. Nestabilan luk, loš uvar.";
+            bead.style.width = "40%";
+            bead.style.background = "var(--red)";
+            bead.style.boxShadow = "0 0 5px var(--red)";
+            label.innerText = "HLADNO - VISOK VAR";
+            label.style.color = "var(--red)";
         } else {
-            b.classList.add('hot-weld');
-            t.innerText = "PREDUG LUK";
-            d.innerText = "Puno prskanja, širok i plitak var. Pregrijavanje.";
+            bead.style.width = "95%";
+            bead.style.background = "var(--orange)";
+            bead.style.boxShadow = "0 0 20px var(--orange)";
+            label.innerText = "PREVRUĆE - ŠIROK VAR";
+            label.style.color = "var(--orange)";
         }
     }
 
-    // AUDIO ENGINE - Generiranje zvuka zavarivanja u realnom vremenu
-    function startWeld() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        let w = document.getElementById('sl_w').value / 10;
-        let v = document.getElementById('sl_v').value / 10;
-        let diff = v - (14 + w);
-
-        // Bijeli šum za bazu zvuka
-        let bufferSize = 2 * audioCtx.sampleRate,
-            noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
-            output = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
-
-        noiseNode = audioCtx.createBufferSource();
-        noiseNode.buffer = noiseBuffer;
-        noiseNode.loop = true;
-
-        let filter = audioCtx.createBiquadFilter();
-        let gainNode = audioCtx.createGain();
-
-        // Prilagodba zvuka prema kvaliteti vara
-        if (Math.abs(diff) <= 1.2) { // DOBAR
-            filter.type = 'bandpass';
-            filter.frequency.value = 800;
-            gainNode.gain.value = 0.3;
-        } else if (diff < -1.2) { // HLADNO - Pucketanje
-            filter.type = 'highpass';
-            filter.frequency.value = 2000;
-            gainNode.gain.value = 0.5;
-        } else { // VRUĆE - Duboko brujanje
-            filter.type = 'lowpass';
-            filter.frequency.value = 400;
-            gainNode.gain.value = 0.6;
-        }
-
-        noiseNode.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        noiseNode.start();
-        
-        document.getElementById('weldBtn').style.background = "#ffae00";
+    function toggleSyn() {
+        synergic = !synergic;
+        document.getElementById('synBtn').classList.toggle('active');
+        document.getElementById('synBtn').innerText = synergic ? "SYNERGIC MOD: UKLJUČEN" : "MANUALNI MOD: UKLJUČEN";
     }
 
-    function stopWeld() {
-        if (noiseNode) {
-            noiseNode.stop();
-            document.getElementById('weldBtn').style.background = "#333";
-        }
-    }
-
-    window.onload = run;
+    window.onload = autoSetup;
 </script>
 </body>
 </html>
