@@ -2,173 +2,192 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QUICKMIG 300 – PRO Simulator</title>
 
 <style>
-body{background:#151515;font-family:Arial;color:#eee}
-.panel{
-    width:520px;margin:30px auto;background:#2b2b2b;
-    border-radius:14px;padding:20px;
-    box-shadow:0 0 30px #000
-}
-h2{text-align:center;color:#ff2b2b}
+body { background:#151515; font-family:Arial; color:#eee; margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; }
 
-/* LED */
-.displays{display:flex;justify-content:space-between;margin-bottom:20px}
-.led{
-    background:#000;color:#ff0000;
-    font-family:'Courier New',monospace;
-    font-size:34px;padding:12px 16px;
-    border-radius:6px;box-shadow:inset 0 0 18px #500
+/* Responzivni Panel */
+.panel {
+    width: 95%;
+    max-width: 520px;
+    margin: 10px;
+    background: #2b2b2b;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 0 30px #000;
+    box-sizing: border-box;
 }
-.label{text-align:center;font-size:12px;color:#aaa}
+
+h2 { text-align:center; color:#ff2b2b; margin-top:0; font-size: 1.5rem; }
+
+/* LED Zasloni */
+.displays { display:flex; justify-content:space-between; margin-bottom:20px; gap: 10px; }
+.led-container { flex: 1; text-align: center; }
+.led {
+    background: #000; color: #ff0000;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(24px, 8vw, 34px); /* Responzivna veličina slova */
+    padding: 12px 5px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 18px #500;
+    cursor: pointer; /* Signalizira da se može kliknuti */
+    border: 1px solid #444;
+}
+.led:hover { border-color: #ff2b2b; }
+.label { font-size: 12px; color: #aaa; margin-top: 5px; text-transform: uppercase; }
 
 /* KNOBS */
-.knobs{display:flex;justify-content:space-around;margin-top:15px}
-.knob{
-    width:90px;height:90px;border-radius:50%;
-    background:radial-gradient(#444,#111);
-    position:relative
+.knobs { display:flex; justify-content:space-around; flex-wrap: wrap; gap: 15px; }
+.knobBox { flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; }
+.knob {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(#444,#111);
+    position: relative; touch-action: none;
 }
-.knob input{
-    position:absolute;width:100%;height:100%;
-    opacity:0;cursor:pointer
+.knob input { position:absolute; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 2; }
+.pointer {
+    width: 4px; height: 35px; background: red;
+    position: absolute; top: 5px; left: 38px;
+    transform-origin: bottom center; transition: transform 0.1s;
 }
-.pointer{
-    width:4px;height:40px;background:red;
-    position:absolute;top:8px;left:43px;
-    transform-origin:bottom center
-}
-.knobBox{text-align:center}
 
 /* BUTTONS */
-.buttons{display:flex;justify-content:space-around;margin-top:25px}
-.btn{
-    background:#333;color:#eee;
-    padding:10px 14px;border-radius:6px;
-    border:none;cursor:pointer
+.buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 25px; }
+.btn {
+    background: #333; color: #eee; border: none;
+    padding: 12px 5px; border-radius: 6px; cursor: pointer;
+    font-weight: bold; font-size: 0.9rem;
 }
-.btn.active{
-    background:#ff2b2b;
-    box-shadow:0 0 12px red
-}
-.info{
-    margin-top:20px;background:#111;
-    padding:10px;border-radius:6px;font-size:14px
-}
+.btn.active { background: #ff2b2b; box-shadow: 0 0 12px red; }
+
+.info { margin-top: 20px; background: #111; padding: 15px; border-radius: 6px; font-size: 14px; line-height: 1.6; }
+span { color: #ff2b2b; font-weight: bold; }
 </style>
 </head>
 
 <body>
-https://japa666-cyber.github.io/QuickMig300/index.html
+
 <div class="panel">
-<h2>LINCOLN QUICKMIG 300</h2>
+    <h2>LINCOLN QUICKMIG 300</h2>
 
-<div class="displays">
-  <div>
-    <div class="led" id="wire">4.5</div>
-    <div class="label">ŽICA m/min</div>
-  </div>
-  <div>
-    <div class="led" id="volt">18.8</div>
-    <div class="label">NAPON V</div>
-  </div>
-</div>
+    <div class="displays">
+      <div class="led-container">
+        <div class="led" id="wire" onclick="manualInput('wire')">4.5</div>
+        <div class="label">ŽICA m/min</div>
+      </div>
+      <div class="led-container">
+        <div class="led" id="volt" onclick="manualInput('volt')">18.5</div>
+        <div class="label">NAPON V</div>
+      </div>
+    </div>
 
-<div class="knobs">
+    <div class="knobs">
+        <div class="knobBox">
+            <div class="knob">
+                <div class="pointer" id="p1"></div>
+                <input type="range" id="r_wire" min="10" max="150" value="45" oninput="updateFromSlider('wire', this.value)">
+            </div>
+            <div class="label">ŽICA / STRUJA</div>
+        </div>
 
-<div class="knobBox">
-<div class="knob">
-<div class="pointer" id="p1"></div>
-<input type="range" min="25" max="60" value="45"
-oninput="setWire(this.value)">
-</div>
-<div class="label">ŽICA / STRUJA</div>
-</div>
+        <div class="knobBox">
+            <div class="knob">
+                <div class="pointer" id="p2"></div>
+                <input type="range" id="r_volt" min="100" max="300" value="185" oninput="updateFromSlider('volt', this.value)">
+            </div>
+            <div class="label">NAPON</div>
+        </div>
 
-<div class="knobBox">
-<div class="knob">
-<div class="pointer" id="p2"></div>
-<input type="range" min="160" max="210" value="188"
-oninput="setVolt(this.value)">
-</div>
-<div class="label">NAPON</div>
-</div>
+        <div class="knobBox">
+            <div class="knob">
+                <div class="pointer" id="p3"></div>
+                <input type="range" min="1" max="10" value="5" oninput="ind.innerText=this.value; rotate(p3, this.value*30)">
+            </div>
+            <div class="label">INDUKTIVNOST</div>
+        </div>
+    </div>
 
-<div class="knobBox">
-<div class="knob">
-<div class="pointer" id="p3"></div>
-<input type="range" min="1" max="10" value="5"
-oninput="ind.innerText=this.value;rotate(p3,this.value*30)">
-</div>
-<div class="label">INDUKTIVNOST</div>
-</div>
+    <div class="buttons">
+        <button class="btn active" id="b2" onclick="mode('2T')">2T</button>
+        <button class="btn" id="b4" onclick="mode('4T')">4T</button>
+        <button class="btn active" id="syn" onclick="synergic()">SYNERGIC</button>
+        <button class="btn" onclick="alert('Gas test OK')">GAS</button>
+        <button class="btn" onclick="alert('Wire inching...')">WIRE</button>
+    </div>
 
-</div>
-
-<div class="buttons">
-<button class="btn active" id="b2" onclick="mode('2T')">2T</button>
-<button class="btn" id="b4" onclick="mode('4T')">4T</button>
-<button class="btn active" id="syn" onclick="synergic()">SYNERGIC</button>
-<button class="btn" onclick="alert('Gas test')">GAS</button>
-<button class="btn" onclick="alert('Wire inch')">WIRE</button>
-</div>
-
-<div class="info">
-Materijal: Ograda / Kapija / Stub<br>
-Žica: 1.0 mm<br>
-Induktivnost: <span id="ind">5</span><br>
-Način: <span id="m">2T</span><br>
-Synergic: <span id="s">ON</span>
-</div>
-
+    <div class="info">
+        Materijal: <b>Čelik / Ograda</b><br>
+        Žica: 1.0 mm | Induktivnost: <span id="ind">5</span><br>
+        Način: <span id="m">2T</span> | Synergic: <span id="s">ON</span>
+    </div>
 </div>
 
 <script>
-let synOn=true;
+let synOn = true;
 
-function rotate(p,v){p.style.transform="rotate("+v+"deg)"}
+function rotate(p, v) { p.style.transform = "rotate(" + v + "deg)"; }
 
-function setWire(v){
-    let w=(v/10).toFixed(1);
-    wire.innerText=w;
-    rotate(p1,v*3);
-    if(synOn){
-        let nv=(14+parseFloat(w)).toFixed(1);
-        volt.innerText=nv;
-        rotate(p2,nv*10);
+// Funkcija za ažuriranje putem slidera
+function updateFromSlider(type, val) {
+    if (type === 'wire') {
+        let w = (val / 10).toFixed(1);
+        document.getElementById('wire').innerText = w;
+        rotate(p1, (val-10) * 2); // Rotacija prilagođena skali
+        
+        if (synOn) {
+            let nv = (14 + parseFloat(w)).toFixed(1);
+            document.getElementById('volt').innerText = nv;
+            document.getElementById('r_volt').value = nv * 10;
+            rotate(p2, (nv * 10 - 100) * 1.5);
+        }
+    } else {
+        if (!synOn) {
+            document.getElementById('volt').innerText = (val / 10).toFixed(1);
+            rotate(p2, (val - 100) * 1.5);
+        }
     }
 }
 
-function setVolt(v){
-    if(!synOn){
-        volt.innerText=(v/10).toFixed(1);
-        rotate(p2,v);
+// RUČNI UNOS KLIKOM NA BROJ
+function manualInput(type) {
+    let current = document.getElementById(type).innerText;
+    let val = prompt("Unesite vrijednost za " + (type === 'wire' ? 'brzinu žice' : 'napon') + ":", current);
+    
+    if (val !== null && !isNaN(val)) {
+        val = parseFloat(val);
+        if (type === 'wire') {
+            if (val >= 1 && val <= 15) {
+                document.getElementById('r_wire').value = val * 10;
+                updateFromSlider('wire', val * 10);
+            }
+        } else {
+            if (val >= 10 && val <= 30) {
+                document.getElementById('r_volt').value = val * 10;
+                updateFromSlider('volt', val * 10);
+            }
+        }
     }
 }
 
-function mode(x){
-    m.innerText=x;
-    b2.classList.remove("active");
-    b4.classList.remove("active");
-    document.getElementById("b"+x[0]).classList.add("active");
+function mode(x) {
+    m.innerText = x;
+    document.getElementById("b2").classList.remove("active");
+    document.getElementById("b4").classList.remove("active");
+    document.getElementById("b" + x[0]).classList.add("active");
 }
 
-function synergic(){
-    synOn=!synOn;
+function synergic() {
+    synOn = !synOn;
     syn.classList.toggle("active");
-    s.innerText=synOn?"ON":"OFF";
-}
-function saveState(){
-    localStorage.setItem("quickmig", JSON.stringify({
-        wire: parseFloat(wire.innerText),
-        volt: parseFloat(volt.innerText),
-        ind: parseInt(ind.innerText)
-    }));
+    s.innerText = synOn ? "ON" : "OFF";
 }
 
-// poziv nakon svake promjene
-setInterval(saveState, 500);
+// Inicijalna rotacija
+rotate(p1, 90);
+rotate(p2, 120);
+rotate(p3, 150);
 </script>
 
 </body>
