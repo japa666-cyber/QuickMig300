@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<title>Sjena profila – LIVE</title>
+
+<style>
+body{background:#111;color:#eee;font-family:Arial}
+.container{
+    width:760px;margin:30px auto;background:#1e1e1e;
+    padding:20px;border-radius:12px
+}
+canvas{background:#222;margin:20px auto;display:block}
+.warn{color:#ff4444;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>SJENA PROFILA – LIVE IZ APARATA</h2>
+
+Debljina profila (mm):
+<input type="range" min="1" max="4" step="0.5" value="2"
+oninput="th=this.value">
+
+<canvas id="c" width="650" height="280"></canvas>
+
+<div>
+Žica/Struja: <b><span id="a">0</span> A</b><br>
+Napon: <b><span id="v">0</span> V</b><br>
+Induktivnost: <b><span id="i">0</span></b><br>
+Synergic: <b><span id="s">OFF</span></b><br>
+Širina HAZ: <b><span id="h">0</span> mm</b><br>
+<span id="warn" class="warn"></span>
+</div>
+</div>
+
+<script>
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+let th = 2;
+
+function draw(){
+    let data = localStorage.getItem("quickmig");
+    if(!data) return;
+
+    let d = JSON.parse(data);
+    a.innerText = d.amp;
+    v.innerText = d.volt;
+    i.innerText = d.ind;
+    s.innerText = d.syn ? "ON" : "OFF";
+
+    let heat = d.amp * d.volt * (1 + d.ind/15);
+    let haz = (heat / (th * 40)).toFixed(1);
+    h.innerText = haz;
+
+    warn.innerText = haz > th*1.2 ? "⚠ OPASNOST OD KRIVLJENJA" : "";
+
+    ctx.clearRect(0,0,c.width,c.height);
+    let px=150,py=110,pw=350,ph=th*15;
+
+    ctx.fillStyle="rgba(255,80,0,0.3)";
+    ctx.fillRect(px-haz*4,py-haz*2,pw+haz*8,ph+haz*4);
+
+    ctx.fillStyle="#ff6600";
+    ctx.fillRect(px,py+ph/2-3,pw,6);
+
+    ctx.fillStyle="#888";
+    ctx.fillRect(px,py,pw,ph);
+}
+
+setInterval(draw,300);
+</script>
+
+</body>
+</html>
