@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>QUICKMIG – TOUCH HMI</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    background:#0e0e0e;
+    color:#eee;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+.hmi{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    height:100vh;
+}
+
+/* LEFT – PARAMETERS */
+.panel{
+    padding:20px;
+    background:#151515;
+}
+
+.block{
+    background:#1f1f1f;
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.block h2{
+    margin:0 0 10px;
+    font-size:20px;
+}
+
+/* BIG DISPLAY */
+.display{
+    font-size:48px;
+    font-weight:bold;
+    background:#000;
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    color:#ff3333;
+}
+
+/* SLIDERS */
+input[type=range]{
+    width:100%;
+    height:50px;
+    margin-top:10px;
+}
+
+/* BUTTONS */
+.btns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+button{
+    height:70px;
+    font-size:20px;
+    border-radius:14px;
+    border:none;
+    background:#333;
+    color:white;
+}
+
+button.active{
+    background:#c40000;
+    box-shadow:0 0 15px #c40000;
+}
+
+button.alarm{
+    background:red;
+    animation:blink 1s infinite;
+}
+
+@keyframes blink{
+    50%{opacity:0.3}
+}
+
+/* RIGHT – LIVE FEEDBACK */
+.feedback{
+    background:#0b0b0b;
+    padding:20px;
+}
+
+canvas{
+    width:100%;
+    height:300px;
+    background:#222;
+    border-radius:16px;
+}
+
+.info{
+    font-size:20px;
+    margin-top:15px;
+}
+.warn{
+    color:#ff5555;
+    font-weight:bold;
+    font-size:22px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hmi">
+
+<!-- LEFT -->
+<div class="panel">
+
+<div class="block">
+<h2>STRUJA (A)</h2>
+<div class="display" id="ampD">170</div>
+<input type="range" min="40" max="220" value="170"
+oninput="setAmp(this.value)">
+</div>
+
+<div class="block">
+<h2>NAPON (V)</h2>
+<div class="display" id="voltD">18.5</div>
+<input type="range" min="14" max="24" step="0.1" value="18.5"
+oninput="setVolt(this.value)">
+</div>
+
+<div class="block">
+<h2>INDUKTIVNOST</h2>
+<input type="range" min="0" max="10" value="5"
+oninput="setInd(this.value)">
+</div>
+
+<div class="block btns">
+<button id="syn" class="active" onclick="toggleSyn()">SYNERGIC</button>
+<button id="alarm">ALARM</button>
+</div>
+
+</div>
+
+<!-- RIGHT -->
+<div class="feedback">
+
+<canvas id="c"></canvas>
+
+<div class="info">
+Struja: <b><span id="a">0</span>A</b><br>
+Napon: <b><span id="v">0</span>V</b><br>
+Induktivnost: <b><span id="i">0</span></b><br>
+HAZ širina: <b><span id="h">0</span> mm</b><br>
+<div id="warn" class="warn"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+let amp=170,volt=18.5,ind=5,syn=true;
+const ctx=document.getElementById("c").getContext("2d");
+
+function save(){
+    localStorage.setItem("quickmig",JSON.stringify({
+        amp,volt,ind,syn
+    }));
+}
+
+function setAmp(v){
+    amp=parseInt(v);
+    ampD.innerText=amp;
+    if(syn){
+        volt=(14+amp/20).toFixed(1);
+        voltD.innerText=volt;
+    }
+    update();
+}
+
+function setVolt(v){
+    if(!syn){
+        volt=parseFloat(v);
+        voltD.innerText=volt;
+        update();
+    }
+}
+
+function setInd(v){
+    ind=parseInt(v);
+    update();
+}
+
+function toggleSyn(){
+    syn=!syn;
+    syn.classList.toggle("active");
+    update();
+}
+
+function update(){
+    a.innerText=amp;
+    v.innerText=volt;
+    i.innerText=ind;
+
+    let heat=amp*volt*(1+ind/15);
+    let haz=(heat/80).toFixed(1);
+    h.innerText=haz;
+
+    alarm.classList.toggle("alarm",heat>4200);
+    warn.innerText=haz>4?"⚠ OPASNOST OD KRIVLJENJA":"";
+
+    drawHaz(haz);
+    save();
+}
+
+function drawHaz(hz){
+    ctx.clearRect(0,0,600,300);
+    ctx.fillStyle="#555";
+    ctx.fillRect(100,150,400,20);
+    ctx.fillStyle="rgba(255,80,0,0.35)";
+    ctx.fillRect(100-hz*6,140,400+hz*12,40);
+}
+
+update();
+</script>
+
+</body>
+</html>
