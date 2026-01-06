@@ -2,205 +2,163 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<title>QuickMig 250 – PRO MIG Kalkulator</title>
+<title>Lincoln QuickMig 300 – PRO AI MIG Kalkulator</title>
 
 <style>
-body {
-    background:#0e0e0e;
-    color:#eee;
-    font-family:Arial;
-    margin:0;
-}
-.container {
-    max-width:900px;
-    margin:auto;
-    padding:20px;
-}
-h1 {
-    text-align:center;
-    color:#e60000;
-}
-.panel {
-    background:#111;
-    border:3px solid #e60000;
-    border-radius:10px;
-    padding:20px;
-}
-label {
-    margin-top:18px;
-    display:block;
-    font-size:1.1em;
-}
-input, select, button {
-    width:100%;
-    padding:12px;
-    margin-top:6px;
-    font-size:1.1em;
-    border-radius:6px;
-    border:none;
-}
-input, select {
-    background:#222;
-    color:white;
-}
-button {
-    background:#e60000;
-    color:white;
-    font-weight:bold;
-    margin-top:25px;
-}
-.quickmig-ui {
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:15px;
-    margin-top:25px;
-}
-.knob {
-    background:#1b1b1b;
-    border:2px solid #444;
-    border-radius:10px;
-    padding:15px;
-    text-align:center;
-}
-.knob span {
-    display:block;
-    font-size:2em;
-    color:#e60000;
-}
-.result {
-    margin-top:25px;
-    background:#1a1a1a;
-    padding:15px;
-    border-radius:8px;
-}
-.risk-low {color:#00ff66;}
-.risk-mid {color:#ffcc00;}
-.risk-high {color:#ff3333;}
+body {background:#0e0e0e;color:#eee;font-family:Arial;margin:0}
+.container{max-width:950px;margin:auto;padding:20px}
+h1{text-align:center;color:#e60000}
+.panel{background:#111;border:3px solid #e60000;border-radius:10px;padding:20px}
+label{margin-top:16px;display:block;font-size:1.05em}
+input,select,button{width:100%;padding:10px;margin-top:6px;font-size:1.05em;border-radius:6px;border:none}
+input,select{background:#222;color:white}
+button{background:#e60000;color:white;font-weight:bold;margin-top:25px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:25px}
+.knob{background:#1b1b1b;border:2px solid #444;border-radius:10px;padding:15px;text-align:center}
+.knob span{display:block;font-size:2em;color:#e60000}
+.result{margin-top:25px;background:#1a1a1a;padding:15px;border-radius:8px}
+.low{color:#00ff66}
+.mid{color:#ffcc00}
+.high{color:#ff3333}
+.ai-cold{color:#4da6ff}
+.ai-hot{color:#ff4d4d}
+.ai-ok{color:#00ff66}
+.small{font-size:0.9em;color:#aaa}
 </style>
 </head>
 
 <body>
 <div class="container">
-<h1>Lincoln QuickMig 250 – PRO</h1>
+<h1>Lincoln QuickMig 300 – PRO AI</h1>
 
 <div class="panel">
 
-<label>Efektivna debljina (mm) – npr. 1 + 3 → 2</label>
-<input type="number" id="t" value="2" step="0.1">
+<label>Efektivna debljina (mm)</label>
+<input id="t" type="number" value="2" step="0.1">
 
-<label>Vrsta materijala</label>
+<label>Materijal</label>
 <select id="material">
-    <option value="steel">Čelik</option>
-    <option value="inox">Inox</option>
+  <option value="steel">Čelik</option>
+  <option value="inox">Inox</option>
 </select>
 
-<label>Vrsta spoja</label>
+<label>Spoj</label>
 <select id="joint">
-    <option value="normal">T-spoj / ugaoni</option>
-    <option value="root">V-žlijeb – korijen</option>
-    <option value="fill">V-žlijeb – punjenje</option>
+  <option value="normal">T-spoj / ugaoni</option>
+  <option value="root">V-žlijeb – korijen</option>
+  <option value="fill">V-žlijeb – punjenje</option>
 </select>
 
 <label>Smjer varenja</label>
 <select id="direction">
-    <option value="downhill">Downhill (odozgo prema dolje)</option>
-    <option value="uphill">Uphill (odozdo prema gore)</option>
+  <option value="downhill">Downhill</option>
+  <option value="uphill">Uphill</option>
 </select>
 
 <label>Brzina ruke (mm/s)</label>
-<input type="number" id="hand" value="65">
+<input id="hand" type="number" value="65">
+
+<hr>
+
+<label>Korekcija struje (A)</label>
+<input id="cA" type="number" value="0">
+
+<label>Korekcija napona (V)</label>
+<input id="cV" type="number" step="0.1" value="0">
+
+<label>Korekcija brzine žice (m/min)</label>
+<input id="cW" type="number" step="0.1" value="0">
+
+<label>Korekcija plina (L/min)</label>
+<input id="cG" type="number" value="0">
+
+<label>Promjer žice (mm)</label>
+<input id="wire" type="number" step="0.1" value="1.0">
+
+<label>Korekcija induktivnosti</label>
+<input id="ind" type="number" step="0.1" value="0">
 
 <button onclick="calc()">IZRAČUNAJ</button>
 
-<div class="quickmig-ui">
-    <div class="knob">Struja<span id="A">–</span>A</div>
-    <div class="knob">Napon<span id="V">–</span>V</div>
-    <div class="knob">Brzina žice<span id="W">–</span>m/min</div>
+<div class="grid">
+  <div class="knob">Struja<span id="A">–</span>A</div>
+  <div class="knob">Napon<span id="V">–</span>V</div>
+  <div class="knob">Žica<span id="W">–</span>m/min</div>
 </div>
 
-<div class="result" id="info"></div>
+<div class="result" id="out"></div>
 
 </div>
 </div>
 
 <script>
-function calc() {
+function calc(){
+  let t=+t_el.value, hand=+hand_el.value;
+  let mat=material.value, joint=joint_el.value, dir=direction.value;
 
-    let t = parseFloat(t_el.value);
-    let mat = material.value;
-    let joint = joint_el.value;
-    let dir = direction.value;
-    let hand = parseFloat(hand_el.value);
+  // === QUICKMIG 300 BASE ===
+  let A=32*t+100, V=0.85*t+18.8, W=0.5*t+4.1, G=10+t;
+  let indBase = dir==="downhill"?5.5:6.5;
 
-    // === BASE (T-SPOJ 1–3 mm) ===
-    let A = 30 * t + 90;
-    let V = 0.85 * t + 18.5;
-    let W = 0.5 * t + 4.0;
-    let G = 10 + t;
+  if(mat==="inox"){V+=1;W+=0.4;G+=1}
+  if(joint==="root"){A-=15;V-=0.8;W-=0.8}
+  if(joint==="fill"){A+=20;V+=0.6;W+=0.7}
+  if(dir==="downhill"){A-=10;V+=0.5;W-=0.3}
+  if(dir==="uphill"){A+=15;V-=0.5;W+=0.4}
 
-    if (mat === "inox") {
-        V += 1;
-        W += 0.4;
-        G += 1;
-    }
+  // === MANUAL CORRECTIONS ===
+  A+=+cA.value;
+  V+=+cV.value;
+  W+=+cW.value;
+  G+=+cG.value;
+  let wire=+wire_el.value;
+  let ind=indBase + +ind_el.value;
 
-    if (joint === "root") {
-        A -= 15; V -= 0.8; W -= 0.8;
-    }
-    if (joint === "fill") {
-        A += 15; V += 0.5; W += 0.6;
-    }
+  // === BURN-THROUGH RISK ===
+  let risk=0;
+  if(V>20.5)risk+=2;
+  if(W>5.3)risk+=2;
+  if(hand<50)risk+=2;
+  if(t<1.5)risk+=2;
 
-    if (dir === "downhill") {
-        V += 0.5; W -= 0.3; A -= 10;
-    }
-    if (dir === "uphill") {
-        V -= 0.5; W += 0.4; A += 15;
-    }
+  let riskTxt=risk<=2?"NIZAK":risk<=5?"SREDNJI":"VISOK";
+  let riskCls=risk<=2?"low":risk<=5?"mid":"high";
 
-    // === RISK CALCULATION ===
-    let riskScore = 0;
-    if (V > 20.5) riskScore += 2;
-    if (W > 5.3) riskScore += 2;
-    if (hand < 50) riskScore += 2;
-    if (dir === "uphill") riskScore += 1;
-    if (t < 1.5) riskScore += 2;
+  // === AI HEAT ANALYSIS ===
+  let heatIndex=(A*V)/(hand*10);
+  let aiTxt, aiCls;
+  if(heatIndex<35){aiTxt="PREHLADNO – slaba fuzija";aiCls="ai-cold"}
+  else if(heatIndex>55){aiTxt="PREVRUĆE – rizik probijanja";aiCls="ai-hot"}
+  else{aiTxt="IDEALNO – stabilan luk";aiCls="ai-ok"}
 
-    let riskText, riskClass;
-    if (riskScore <= 2) {
-        riskText = "NIZAK – sigurno";
-        riskClass = "risk-low";
-    } else if (riskScore <= 5) {
-        riskText = "SREDNJI – oprez";
-        riskClass = "risk-mid";
-    } else {
-        riskText = "VISOK – moguća rupa";
-        riskClass = "risk-high";
-    }
+  A_el.innerText=A.toFixed(0);
+  V_el.innerText=V.toFixed(1);
+  W_el.innerText=W.toFixed(1);
 
-    A_el.innerText = A.toFixed(0);
-    V_el.innerText = V.toFixed(1);
-    W_el.innerText = W.toFixed(1);
-
-    info.innerHTML =
-        "🌬️ Plin: <b>" + G.toFixed(0) + " L/min</b><br>" +
-        "🧵 Žica: <b>1.0 mm</b><br>" +
-        "🎛️ Induktivnost: <b>" + (dir==="downhill"?"5–6":"6–7") + "</b><br>" +
-        "✋ Preporučena brzina ruke: <b>" +
-        (dir==="downhill"?"60–75":"40–55") + " mm/s</b><br><br>" +
-        "🔥 Rizik probijanja: <b class='"+riskClass+"'>" + riskText + "</b>";
+  out.innerHTML=
+    `🌬️ Plin: <b>${G.toFixed(0)} L/min</b><br>
+     🧵 Žica: <b>${wire.toFixed(1)} mm</b><br>
+     🎛️ Induktivnost: <b>${ind.toFixed(1)}</b><br><br>
+     🔥 Rizik probijanja: <b class="${riskCls}">${riskTxt}</b><br>
+     🤖 AI procjena: <b class="${aiCls}">${aiTxt}</b>
+     <div class="small">Heat index: ${heatIndex.toFixed(1)}</div>`;
 }
 
-// shortcuts
-const t_el = document.getElementById("t");
-const material = document.getElementById("material");
-const joint_el = document.getElementById("joint");
-const direction = document.getElementById("direction");
-const hand_el = document.getElementById("hand");
-const A_el = document.getElementById("A");
-const V_el = document.getElementById("V");
-const W_el = document.getElementById("W");
-const info = document.getElementById("info");
+// elements
+const t_el=t,material=document.getElementById("material"),
+joint_el=document.getElementById("joint"),
+direction=document.getElementById("direction"),
+hand_el=document.getElementById("hand"),
+cA=document.getElementById("cA"),
+cV=document.getElementById("cV"),
+cW=document.getElementById("cW"),
+cG=document.getElementById("cG"),
+wire_el=document.getElementById("wire"),
+ind_el=document.getElementById("ind"),
+A_el=document.getElementById("A"),
+V_el=document.getElementById("V"),
+W_el=document.getElementById("W"),
+out=document.getElementById("out");
 </script>
 
 </body>
