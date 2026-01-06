@@ -136,9 +136,9 @@ function calc() {
     let joint = document.getElementById("joint").value;
 
     let A = 35 * t + 35;
-    let V = 0.9 * t + 15.5;
-    let W = 0.55 * t + 3.5;
-    let G = 9 + t;
+    let V = 0.75 * t + 15.5;
+    let W = 0.35 * t + 2.9;
+    let G = 8 + 0.7 * t;
 
     // inox korekcija
     if (mat === "inox") {
