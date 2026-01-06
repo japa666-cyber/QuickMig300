@@ -2,119 +2,113 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QuickMig 250 – MIG Kalkulator</title>
+<title>QuickMig 250 – PRO MIG Kalkulator</title>
 
 <style>
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0e0e0e;
-    color: #f0f0f0;
+    background:#0e0e0e;
+    color:#eee;
+    font-family:Arial;
+    margin:0;
 }
-
 .container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
+    max-width:900px;
+    margin:auto;
+    padding:20px;
 }
-
 h1 {
-    text-align: center;
-    color: #e60000;
-    font-size: 2.2em;
+    text-align:center;
+    color:#e60000;
 }
-
 .panel {
-    background: #111;
-    border: 3px solid #e60000;
-    border-radius: 10px;
-    padding: 20px;
+    background:#111;
+    border:3px solid #e60000;
+    border-radius:10px;
+    padding:20px;
 }
-
 label {
-    display: block;
-    margin-top: 20px;
-    font-size: 1.2em;
+    margin-top:18px;
+    display:block;
+    font-size:1.1em;
 }
-
-select, input, button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 8px;
-    font-size: 1.3em;
-    border-radius: 6px;
-    border: none;
+input, select, button {
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    font-size:1.1em;
+    border-radius:6px;
+    border:none;
 }
-
-select, input {
-    background: #222;
-    color: #fff;
+input, select {
+    background:#222;
+    color:white;
 }
-
 button {
-    background: #e60000;
-    color: white;
-    font-weight: bold;
-    margin-top: 30px;
+    background:#e60000;
+    color:white;
+    font-weight:bold;
+    margin-top:25px;
 }
-
-button:active {
-    background: #b00000;
-}
-
 .quickmig-ui {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: 30px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-top:25px;
 }
-
 .knob {
-    background: #1b1b1b;
-    border: 2px solid #444;
-    border-radius: 10px;
-    text-align: center;
-    padding: 15px;
+    background:#1b1b1b;
+    border:2px solid #444;
+    border-radius:10px;
+    padding:15px;
+    text-align:center;
 }
-
 .knob span {
-    display: block;
-    font-size: 2em;
-    color: #e60000;
+    display:block;
+    font-size:2em;
+    color:#e60000;
 }
-
 .result {
-    margin-top: 30px;
-    background: #1a1a1a;
-    padding: 20px;
-    border-radius: 8px;
-    font-size: 1.3em;
+    margin-top:25px;
+    background:#1a1a1a;
+    padding:15px;
+    border-radius:8px;
 }
+.risk-low {color:#00ff66;}
+.risk-mid {color:#ffcc00;}
+.risk-high {color:#ff3333;}
 </style>
 </head>
 
 <body>
 <div class="container">
-<h1>Lincoln QuickMig 250</h1>
+<h1>Lincoln QuickMig 250 – PRO</h1>
 
 <div class="panel">
 
-<label>Debljina materijala (mm)</label>
-<input type="number" id="t" min="1" step="0.1" value="6">
+<label>Efektivna debljina (mm) – npr. 1 + 3 → 2</label>
+<input type="number" id="t" value="2" step="0.1">
 
 <label>Vrsta materijala</label>
 <select id="material">
-    <option value="steel">Konstrukcijski čelik (Fe)</option>
-    <option value="inox">Inox (SS)</option>
+    <option value="steel">Čelik</option>
+    <option value="inox">Inox</option>
 </select>
 
 <label>Vrsta spoja</label>
 <select id="joint">
-    <option value="normal">Ravni spoj</option>
-    <option value="root">V-žlijeb – KORIJEN</option>
-    <option value="fill">V-žlijeb – PUNJENJE</option>
+    <option value="normal">T-spoj / ugaoni</option>
+    <option value="root">V-žlijeb – korijen</option>
+    <option value="fill">V-žlijeb – punjenje</option>
 </select>
+
+<label>Smjer varenja</label>
+<select id="direction">
+    <option value="downhill">Downhill (odozgo prema dolje)</option>
+    <option value="uphill">Uphill (odozdo prema gore)</option>
+</select>
+
+<label>Brzina ruke (mm/s)</label>
+<input type="number" id="hand" value="65">
 
 <button onclick="calc()">IZRAČUNAJ</button>
 
@@ -124,49 +118,89 @@ button:active {
     <div class="knob">Brzina žice<span id="W">–</span>m/min</div>
 </div>
 
-<div class="result" id="gas"></div>
+<div class="result" id="info"></div>
 
 </div>
 </div>
 
 <script>
 function calc() {
-    let t = parseFloat(document.getElementById("t").value);
-    let mat = document.getElementById("material").value;
-    let joint = document.getElementById("joint").value;
 
-    let A = 35 * t + 35;
-    let V = 0.75 * t + 15.5;
-    let W = 0.35 * t + 2.9;
-    let G = 8 + 0.7 * t;
+    let t = parseFloat(t_el.value);
+    let mat = material.value;
+    let joint = joint_el.value;
+    let dir = direction.value;
+    let hand = parseFloat(hand_el.value);
 
-    // inox korekcija
+    // === BASE (T-SPOJ 1–3 mm) ===
+    let A = 30 * t + 90;
+    let V = 0.85 * t + 18.5;
+    let W = 0.5 * t + 4.0;
+    let G = 10 + t;
+
     if (mat === "inox") {
         V += 1;
-        W += 0.5;
+        W += 0.4;
+        G += 1;
     }
 
-    // V-žlijeb korekcije
     if (joint === "root") {
-        A -= 20;
-        V -= 1;
-        W -= 1.0;
+        A -= 15; V -= 0.8; W -= 0.8;
     }
-
     if (joint === "fill") {
-        A += 20;
-        V += 0.5;
-        W += 0.8;
+        A += 15; V += 0.5; W += 0.6;
     }
 
-    document.getElementById("A").innerText = A.toFixed(0);
-    document.getElementById("V").innerText = V.toFixed(1);
-    document.getElementById("W").innerText = W.toFixed(1);
-    document.getElementById("gas").innerHTML =
-        "🌬️ CO₂ 100 %: <b>" + G.toFixed(0) + " L/min</b><br>" +
+    if (dir === "downhill") {
+        V += 0.5; W -= 0.3; A -= 10;
+    }
+    if (dir === "uphill") {
+        V -= 0.5; W += 0.4; A += 15;
+    }
+
+    // === RISK CALCULATION ===
+    let riskScore = 0;
+    if (V > 20.5) riskScore += 2;
+    if (W > 5.3) riskScore += 2;
+    if (hand < 50) riskScore += 2;
+    if (dir === "uphill") riskScore += 1;
+    if (t < 1.5) riskScore += 2;
+
+    let riskText, riskClass;
+    if (riskScore <= 2) {
+        riskText = "NIZAK – sigurno";
+        riskClass = "risk-low";
+    } else if (riskScore <= 5) {
+        riskText = "SREDNJI – oprez";
+        riskClass = "risk-mid";
+    } else {
+        riskText = "VISOK – moguća rupa";
+        riskClass = "risk-high";
+    }
+
+    A_el.innerText = A.toFixed(0);
+    V_el.innerText = V.toFixed(1);
+    W_el.innerText = W.toFixed(1);
+
+    info.innerHTML =
+        "🌬️ Plin: <b>" + G.toFixed(0) + " L/min</b><br>" +
         "🧵 Žica: <b>1.0 mm</b><br>" +
-        "🎛️ Induktivnost: <b>5 – 6</b>";
+        "🎛️ Induktivnost: <b>" + (dir==="downhill"?"5–6":"6–7") + "</b><br>" +
+        "✋ Preporučena brzina ruke: <b>" +
+        (dir==="downhill"?"60–75":"40–55") + " mm/s</b><br><br>" +
+        "🔥 Rizik probijanja: <b class='"+riskClass+"'>" + riskText + "</b>";
 }
+
+// shortcuts
+const t_el = document.getElementById("t");
+const material = document.getElementById("material");
+const joint_el = document.getElementById("joint");
+const direction = document.getElementById("direction");
+const hand_el = document.getElementById("hand");
+const A_el = document.getElementById("A");
+const V_el = document.getElementById("V");
+const W_el = document.getElementById("W");
+const info = document.getElementById("info");
 </script>
 
 </body>
