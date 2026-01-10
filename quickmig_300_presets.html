@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quick MIG 300 — Parametri</title>
+  <style>
+    :root{font-family:Inter,Segoe UI,Arial;--bg:#0f1720;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8}
+    body{margin:0;padding:18px;background:#f3f4f6;color:#0f1720}
+    .container{max-width:900px;margin:0 auto}
+    .card{background:#fff;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    label{display:block;font-size:13px;margin-bottom:6px;color:#111827}
+    select,input{width:100%;padding:8px 10px;border:1px solid #e6e9ee;border-radius:6px;font-size:14px}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    .small{font-size:13px;color:var(--muted)}
+    .output{background:#0f1720;color:#fff;padding:12px;border-radius:8px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:#042;cursor:pointer;margin-right:8px}
+    pre{white-space:pre-wrap;font-size:13px}
+    footer{font-size:13px;color:#6b7280;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Quick MIG 300 — kalkulator postavki</h2>
+    <div class="card">
+      <div class="row">
+        <div class="col">
+          <label>Profil (kvadrat)</label>
+          <select id="profile">
+            <option value="50x50_1.5">50×50 — 1.5 mm</option>
+            <option value="60x60_1.5">60×60 — 1.5 mm</option>
+            <option value="40x40_2.0">40×40 — 2.0 mm</option>
+            <option value="50x50_3.0">50×50 — 3.0 mm</option>
+            <option value="60x60_4.0">60×60 — 4.0 mm</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Ploča (stalno)</label>
+          <input id="plate" value="3 mm" disabled />
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="row">
+        <div class="col">
+          <label>Žica (mm)</label>
+          <select id="wire">
+            <option value="0.8">0.8</option>
+            <option value="1.0">1.0</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Plin</label>
+          <select id="gas">
+            <option value="M21">Ar/CO₂ 82/18 (M21)</option>
+            <option value="CO2">100% CO₂</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="row">
+        <div class="col">
+          <label>Režim</label>
+          <select id="mode">
+            <option value="synergic">Synergic</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Pulse (ako podržano)</label>
+          <select id="pulse">
+            <option value="off">Off</option>
+            <option value="on">On</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="row">
+        <div class="col">
+          <label>Vrsta varenja</label>
+          <select id="weldType">
+            <option value="manual">Ručno</option>
+            <option value="robot">Robot</option>
+            <option value="flange">Profil–Flanša</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <button class="btn" id="calc">Izračunaj postavke</button>
+      <button class="btn" id="copy">Kopiraj JSON</button>
+      <button class="btn" id="export">Preuzmi JSON</button>
+
+    </div>
+
+    <div class="card">
+      <h3>Preporučene postavke</h3>
+      <div class="output" id="result">
+        <pre id="json">Pritisni "Izračunaj postavke" za prikaz preporuka.</pre>
+      </div>
+      <footer>Žica: podrazumijevano 0.8 mm. Ploča uvijek 3 mm. Vrijednosti su okvirne — testiraj na otpadu.</footer>
+    </div>
+  </div>
+
+  <script>
+    // Presets map (derived from tabela u razgovoru)
+    const presets = {
+      '50x50_1.5': {current:[85,95], voltage:[17.0,17.5], wire:[4.5,5.0], heat:{plate:70,profile:30}},
+      '60x60_1.5': {current:[90,100], voltage:[17.5,18.0], wire:[4.8,5.3], heat:{plate:70,profile:30}},
+      '40x40_2.0': {current:[95,110], voltage:[17.5,18.5], wire:[5.0,5.5], heat:{plate:65,profile:35}},
+      '50x50_3.0': {current:[110,125], voltage:[18.0,19.0], wire:[5.5,6.0], heat:{plate:60,profile:40}},
+      '60x60_4.0': {current:[125,145], voltage:[19.0,20.0], wire:[6.0,6.5], heat:{plate:55,profile:45}}
+    };
+
+    function getSelection(){
+      const profile = document.getElementById('profile').value;
+      const wire = document.getElementById('wire').value;
+      const gas = document.getElementById('gas').value;
+      const mode = document.getElementById('mode').value;
+      const pulse = document.getElementById('pulse').value;
+      const weldType = document.getElementById('weldType').value;
+      return {profile,wire,gas,mode,pulse,weldType};
+    }
+
+    function formatRange(arr){
+      return arr[0] === arr[1] ? String(arr[0]) : `${arr[0]} - ${arr[1]}`;
+    }
+
+    document.getElementById('calc').addEventListener('click', ()=>{
+      const sel = getSelection();
+      const p = presets[sel.profile];
+      let recommended = {
+        machine: 'Quick MIG 300',
+        profile: sel.profile,
+        plate: '3 mm',
+        wire_mm: sel.wire + ' mm',
+        gas: sel.gas,
+        mode: sel.mode,
+        pulse: sel.pulse,
+        weldType: sel.weldType,
+        current_A: formatRange(p.current) + ' A',
+        voltage_V: formatRange(p.voltage) + ' V',
+        wire_speed_m_per_min: formatRange(p.wire) + ' m/min',
+        gas_flow_L_min: sel.gas === 'CO2' ? '10 - 12 L/min' : '10 - 12 L/min',
+        heat_distribution_percent: p.heat,
+        notes: 'Drži pištolj nagnut 10-15° prema ploči; radi kratke šavove i testiraj na otpadu.'
+      };
+
+      // Adjustments based on weld type
+      if(sel.weldType === 'robot'){
+        recommended.notes += ' Robot varenje: parametri mogu biti ujednačeniji, veća brzina i duži šav bez prekida.';
+      }
+      if(sel.weldType === 'flange'){
+        recommended.notes += ' Flanša: obrati pažnju na prianjanje profila uz ploču i eventualno pojačaj struju +5%. ';
+      }
+
+      // If pulse on, slightly reduce current range and keep voltage similar
+      if(sel.pulse === 'on'){
+        recommended.current_A = `${Math.round(p.current[0]*0.85)} - ${Math.round(p.current[1]*0.9)} A (pulse adjusted)`;
+        recommended.notes += ' Pulse uključen — smanjena struja za manju toplinu.';
+      }
+
+      // If manual mode, add hint
+      if(sel.mode === 'manual'){
+        recommended.notes += ' Manual mode: koristite kao polazne vrijednosti i fino podešavajte.';
+      }
+
+      document.getElementById('json').textContent = JSON.stringify(recommended, null, 2);
+    });
+
+    document.getElementById('copy').addEventListener('click', async ()=>{
+      const text = document.getElementById('json').textContent;
+      try{
+        await navigator.clipboard.writeText(text);
+        alert('Kopirano u clipboard');
+      }catch(e){ alert('Clipboard nije dostupan — preuzmite JSON.'); }
+    });
+
+    document.getElementById('export').addEventListener('click', ()=>{
+      const data = document.getElementById('json').textContent;
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'quickmig300_settings.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
