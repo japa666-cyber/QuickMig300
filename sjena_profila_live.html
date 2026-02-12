@@ -1,76 +1,130 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sjena profila – LIVE</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welding Path Generator</title>
 <style>
-body{background:#111;color:#eee;font-family:Arial}
-.container{
-    width:760px;margin:30px auto;background:#1e1e1e;
-    padding:20px;border-radius:12px
-}
-canvas{background:#222;margin:20px auto;display:block}
-.warn{color:#ff4444;font-weight:bold}
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 2rem; background-color: #f8f9fa; color: #212529; }
+  h2, h3 { color: #343a40; }
+  .container { max-width: 800px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  form { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; align-items: center; margin-bottom: 2rem; }
+  label { font-weight: bold; }
+  input[type="number"] { padding: 8px; border: 1px solid #ced4da; border-radius: 4px; width: 100px; }
+  button { grid-column: 1 / -1; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; }
+  button:hover { background-color: #0056b3; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  th, td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
+  th { background-color: #e9ecef; }
+  tr:nth-child(even) { background-color: #f8f9fa; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-<h2>SJENA PROFILA – LIVE IZ APARATA</h2>
+  <h2>Zig-Zag Welding Path Generator</h2>
 
-Debljina profila (mm):
-<input type="range" min="1" max="4" step="0.5" value="2"
-oninput="th=this.value">
+  <form id="weldingForm">
+    <label for="matWidth">Material Width (mm):</label>
+    <input type="number" id="matWidth" value="100">
 
-<canvas id="c" width="650" height="280"></canvas>
+    <label for="matHeight">Material Height (mm):</label>
+    <input type="number" id="matHeight" value="100">
 
-<div>
-Žica/Struja: <b><span id="a">0</span> A</b><br>
-Napon: <b><span id="v">0</span> V</b><br>
-Induktivnost: <b><span id="i">0</span></b><br>
-Synergic: <b><span id="s">OFF</span></b><br>
-Širina HAZ: <b><span id="h">0</span> mm</b><br>
-<span id="warn" class="warn"></span>
-</div>
+    <label for="stepOver">Step Over (mm):</label>
+    <input type="number" id="stepOver" value="10">
+
+    <label for="zHeight">Z Layer Height (mm):</label>
+    <input type="number" id="zHeight" value="5">
+
+    <label for="passes">Number of Passes:</label>
+    <input type="number" id="passes" value="2">
+
+    <button type="button" onclick="generatePath()">Generate Path</button>
+  </form>
+
+  <h3>Path Output:</h3>
+  <table id="pathTable">
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th>X (mm)</th>
+        <th>Y (mm)</th>
+        <th>Z (mm)</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      </tbody>
+  </table>
 </div>
 
 <script>
-const c = document.getElementById("c");
-const ctx = c.getContext("2d");
-let th = 2;
+function generatePath() {
+  // Get values from the form
+  const matWidth = parseFloat(document.getElementById("matWidth").value);
+  const matHeight = parseFloat(document.getElementById("matHeight").value);
+  const stepOver = parseFloat(document.getElementById("stepOver").value);
+  const zHeight = parseFloat(document.getElementById("zHeight").value);
+  const passes = parseInt(document.getElementById("passes").value);
 
-function draw(){
-    let data = localStorage.getItem("quickmig");
-    if(!data) return;
+  let path = [];
+  let stepCounter = 1;
 
-    let d = JSON.parse(data);
-    a.innerText = d.amp;
-    v.innerText = d.volt;
-    i.innerText = d.ind;
-    s.innerText = d.syn ? "ON" : "OFF";
+  // Loop for each welding pass
+  for (let p = 1; p <= passes; p++) {
+    let y = 0;
+    let direction = 1; // 1 for left-to-right, -1 for right-to-left
+    const currentZ = zHeight * p; // Z height increases with each pass
 
-    let heat = d.amp * d.volt * (1 + d.ind/15);
-    let haz = (heat / (th * 40)).toFixed(1);
-    h.innerText = haz;
+    // Loop through the material height (Y-axis)
+    while (y <= matHeight) {
+      if (direction === 1) {
+        // Move from X=0 to X=matWidth
+        for (let x = 0; x <= matWidth; x += stepOver) {
+          path.push({
+            step: stepCounter++,
+            x: x,
+            y: y,
+            z: currentZ,
+            desc: `Pass ${p} - Weld at (${x}, ${y})`
+          });
+        }
+      } else {
+        // Move from X=matWidth to X=0
+        for (let x = matWidth; x >= 0; x -= stepOver) {
+          path.push({
+            step: stepCounter++,
+            x: x,
+            y: y,
+            z: currentZ,
+            desc: `Pass ${p} - Weld at (${x}, ${y})`
+          });
+        }
+      }
+      
+      // Move to the next row and reverse direction for the zig-zag
+      y += stepOver;
+      direction *= -1;
+    }
+  }
 
-    warn.innerText = haz > th*1.2 ? "⚠ OPASNOST OD KRIVLJENJA" : "";
+  // Populate the output table
+  const tableBody = document.querySelector("#pathTable tbody");
+  tableBody.innerHTML = ""; // Clear previous results
 
-    ctx.clearRect(0,0,c.width,c.height);
-    let px=150,py=110,pw=350,ph=th*15;
-
-    ctx.fillStyle="rgba(255,80,0,0.3)";
-    ctx.fillRect(px-haz*4,py-haz*2,pw+haz*8,ph+haz*4);
-
-    ctx.fillStyle="#ff6600";
-    ctx.fillRect(px,py+ph/2-3,pw,6);
-
-    ctx.fillStyle="#888";
-    ctx.fillRect(px,py,pw,ph);
+  path.forEach(point => {
+    const row = tableBody.insertRow();
+    row.insertCell(0).innerText = point.step;
+    row.insertCell(1).innerText = point.x.toFixed(2);
+    row.insertCell(2).innerText = point.y.toFixed(2);
+    row.insertCell(3).innerText = point.z.toFixed(2);
+    row.insertCell(4).innerText = point.desc;
+  });
 }
 
-setInterval(draw,300);
+// Generate a default path on page load
+window.onload = generatePath;
 </script>
 
 </body>
