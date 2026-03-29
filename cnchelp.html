@@ -1,136 +1,57 @@
-DOCTYPE html>
-<html lang="bs">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNC Kontrolni Panel</title>
-
-    <style>
-        /* Opšti stilovi */
-        body {
-            font-family: 'Consolas', monospace;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            user-select: none;
-        }
-
-        .cnc-interface {
-            display: flex;
-            background-color: #34495e;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
-            border: 3px solid #2c3e50;
-            border-radius: 5px;
-            width: 90%;
-            max-width: 850px;
-            min-height: 500px;
-        }
-
-        .menu-bar {
-            width: 150px;
-            background-color: #2c3e50;
-            padding: 10px 0;
-            border-right: 2px solid #f39c12;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .menu-bar button {
-            background-color: #5d6d7e;
-            color: white;
-            padding: 15px 10px;
-            margin: 5px 10px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9em;
-            border-radius: 3px;
-            transition: background-color 0.2s;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .menu-bar button:hover {
-            background-color: #f39c12;
-        }
-
-        .menu-bar button.active {
-            background-color: #e67e22;
-            border: 2px solid #f39c12;
-        }
-
-        .main-display {
-            flex-grow: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        #screen-content {
-            flex-grow: 1;
-            background-color: #1a242f;
-            border: 1px solid #7f8c8d;
-            padding: 15px;
-            overflow-y: auto;
-            color: #00ff00;
-            white-space: pre-wrap;
-            min-height: 350px;
-        }
-
-        #screen-content h3 {
-            color: #f39c12;
-            margin-top: 0;
-        }
-
-        .help-panel {
-            background: #2c3e50;
-            border-top: 2px solid #f39c12;
-            padding: 10px;
-            color: #bdc3c7;
-            font-size: 0.9em;
-            font-style: italic;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>M3U → TXT</title>
 </head>
 <body>
 
-<div class="cnc-interface">
+<h3>M3U → Channel,URL</h3>
 
-    <div class="menu-bar">
-        <button id="btn-home" onclick="goToMenu('HOME')" class="active" title="Početni ekran">HOME</button>
-        <button id="btn-menu1" onclick="goToMenu('MENU 1')" title="Podešavanje parametara">MENU 1</button>
-        <button id="btn-menu2" onclick="goToMenu('MENU 2')" title="Lista programa">MENU 2</button>
-        <button id="btn-menu3" onclick="goToMenu('MENU 3')" title="Sistemska podešavanja">MENU 3</button>
-        <button onclick="console.log('JOG/STEP aktiviran')" style="margin-top: auto;">JOG / STEP</button>
-    </div>
+<textarea id="input" rows="15" cols="70" placeholder="#EXTINF:-1,Channel
+https://link"></textarea>
 
-    <div class="main-display">
-        <div id="screen-content"></div>
-        <div class="help-panel">
-            <h4>💡 Savjet:</h4>
-            <p id="help-text">Odaberite opciju iz menija da biste vidjeli detaljne informacije.</p>
-        </div>
-    </div>
+<br><br>
+<button onclick="convert()">Convert</button>
+<button onclick="download()">Download TXT</button>
 
-</div>
+<br><br>
+<textarea id="output" rows="15" cols="70"></textarea>
 
 <script>
-    const menuContent = {
-        'HOME': `
-### GLAVNI EKRAN (HOME)
-Trenutno vrijeme: ${new Date().toLocaleTimeString()}
-STATUS: SPREMAN. Pritisnite 'MENU 1' za unos parametara.
+function convert() {
+    let lines = document.getElementById("input").value.split("\n");
+    let result = "";
+    let name = "";
 
-Z EKSEN KONUMU: 0.0
-Z EKSEN 1. HAREKET: 23.0
-Z EKSEN 2. HAREKET: 51.7
+    lines.forEach(line => {
+        line = line.trim();
 
-Posljednji unos: 52 x 52 mm
-`,
-        'MENU 1': `
-### PODEŠAVANJE PARAMETARA (1. KAYNAK KENARI)
-Unesite dimenzije profila (X, Y).
+        // uzmi ime iz EXTINF
+        if (line.startsWith("#EXTINF")) {
+            let parts = line.split(",");
+            name = parts[parts.length - 1].trim();
+        }
+
+        // uzmi URL (nije komentar)
+        else if (line && !line.startsWith("#")) {
+            result += name + "," + line + "\n";
+        }
+    });
+
+    document.getElementById("output").value = result;
+}
+
+function download() {
+    let text = document.getElementById("output").value;
+    let blob = new Blob([text], { type: "text/plain" });
+    let a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+    a.download = "channels.txt";
+    a.click();
+}
+</script>
+
+</body>
+</html>
