@@ -34,8 +34,8 @@
     <h2 style="text-align:center; color:var(--red); margin: 0 0 20px 0;">QUICKMIG 300 ADVANCED</h2>
 
     <div class="display-unit">
-        <div><div class="led" id="d_w">5.0</div><div class="label">m/min</div></div>
-        <div><div class="led" id="d_v">19.5</div><div class="label">Napon V</div></div>
+        <div><div class="led" id="d_w">4.6</div><div class="label">m/min</div></div>
+        <div><div class="led" id="d_v">19.6</div><div class="label">Napon V</div></div>
         <div><div class="led" id="d_ind" style="color:var(--green)">0</div><div class="label">Induktivnost</div></div>
     </div>
 
@@ -51,11 +51,11 @@
         </div>
         <div>
             <label class="label">Brzina Ruke: <span id="v_speed">6</span> mm/s</label>
-            <input type="range" id="sl_speed" min="2" max="15" value="6" oninput="sync()">
+            <input type="range" id="sl_speed" min="2" max="100" value="6" oninput="sync()">
         </div>
         <div style="grid-column: span 2;">
             <label class="label">Induktivnost (Prigušnica): <span id="ind_val">0</span></label>
-            <input type="range" id="sl_ind" min="-10" max="10" value="0" oninput="sync()">
+            <input type="range" id="sl_ind" min="0" max="10" value="0" oninput="sync()">
         </div>
     </div>
 
